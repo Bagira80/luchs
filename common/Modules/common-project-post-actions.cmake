@@ -1,9 +1,7 @@
 ##
 # @file
 # @note This file should be (automatically) included in each CMakeLists.txt file after the
-#       `project` command is called. (This is automatically taken care of because the variable
-#       `CMAKE_PROJECT_INCLUDE` points to this file and so it is included automatically
-#       with every call to the `project` command.)
+#       `project` command is called.
 #
 # @details This file contains different settings which are automatically applied after a new
 #          project was set up.
