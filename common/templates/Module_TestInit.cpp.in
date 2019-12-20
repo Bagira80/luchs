@@ -1,0 +1,54 @@
+// This is a generated file!
+// It makes sure to properly initialize unit-tests.
+
+#define BOOST_TEST_DYN_LINK 1
+#define BOOST_TEST_MODULE "Testing module: @PROJECT_NAME@"
+#include <boost/test/unit_test.hpp>
+#include <gmock/gmock.h>
+
+
+// NOTE:
+// The following code was taken from the publicly readable Boost mailing list
+// and slightly modified to fit coding-conventions and to compile.
+// It originates from an e-mail of Peter Goetz which he wrote on 2011-01-07 13:42:26.
+// See: http://lists.boost.org/boost-users/2011/01/65407.php
+// See: http://code.google.com/p/googletest/wiki/AdvancedGuide#Extending_Google_Test_by_Handling_Test_Events
+
+class BoostTestAdapter : public ::testing::EmptyTestEventListener
+{
+    virtual void OnTestPartResult( const ::testing::TestPartResult& testPartResult )
+    {
+        if ( testPartResult.failed() )
+        {
+            std::stringstream s;
+            if ( testPartResult.file_name() != nullptr && *testPartResult.file_name() != '\0' )
+            {
+                s << "\n" << testPartResult.file_name()
+                  << ":" << testPartResult.line_number() << ": "
+                  << testPartResult.summary();
+            }
+            else
+            {
+                s << "\nunknown file: " << testPartResult.summary();
+            }
+            BOOST_ERROR( s.str() );
+        }
+    }
+};
+
+// Create a fixture for Google Mock and...
+struct GoogleMockFixture
+{
+    GoogleMockFixture()
+    {
+        ::testing::InitGoogleMock( &boost::unit_test::framework::master_test_suite().argc,
+                                    boost::unit_test::framework::master_test_suite().argv );
+        ::testing::TestEventListeners& listeners = ::testing::UnitTest::GetInstance()->listeners();
+        delete listeners.Release( listeners.default_result_printer() );
+        listeners.Append( new BoostTestAdapter );
+    }
+
+    ~GoogleMockFixture() {}
+};
+// ...register as global fixture in Boost Unit-Test-Framework.
+BOOST_GLOBAL_FIXTURE( GoogleMockFixture );
