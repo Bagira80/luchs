@@ -16,6 +16,8 @@
 #            `ORGANIZATION_COMPILER_TAG`. (That variable should be helpful when providing hints to e.g.
 #            `find_package` commands.)
 #          * It adds the "Modules" subdirectory to the search-path for CMake modules.
+#          * It sets the default install-prefix (path) that shall be used if the user does not
+#            provide one.
 #
 
 # This file may only be called once and that should be from the top-level CMakeLists.txt file!
@@ -59,3 +61,8 @@ enable_position_independent_code()
 enable_default_warnings_and_errors()
 
 
+# Set the default install-prefix (if the user did not set one explicitly).
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR NOT CMAKE_INSTALL_PREFIX)
+    set( CMAKE_INSTALL_PREFIX "/opt/ORGANIZATION/${ORGANIZATION_COMPILER_TAG}"
+         CACHE PATH "Install path prefix, prepended onto install directories." FORCE )
+endif()
