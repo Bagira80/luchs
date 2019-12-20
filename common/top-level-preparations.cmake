@@ -62,6 +62,43 @@ enable_position_independent_code()
 enable_default_warnings_and_errors()
 
 
+# Store the default build-type in the CMake cache (if not already).
+if (NOT DEFINED CMAKE_DEFAULT_BUILD_TYPE)
+    set( CMAKE_DEFAULT_BUILD_TYPE Debug )  # Debug by default
+endif()
+set( CMAKE_DEFAULT_BUILD_TYPE ${CMAKE_DEFAULT_BUILD_TYPE}
+     CACHE STRING
+     "Choose the type of build to be used by default, options are: Debug, Release, RelWithDebInfo, MinSizeRel." )
+unset( CMAKE_DEFAULT_BUILD_TYPE )  # Only keep cache variable.
+set_property( CACHE CMAKE_DEFAULT_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel" )
+set_property( CACHE CMAKE_DEFAULT_BUILD_TYPE PROPERTY ADVANCED TRUE )
+
+
+# Store the build-type / configuration-types in the CMake cache (if not already).
+get_cmake_property( is_multi_config_generator GENERATOR_IS_MULTI_CONFIG )
+if (is_multi_config_generator)
+    if (NOT DEFINED CMAKE_CONFIGURATION_TYPES)
+        set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel" )
+    endif()
+    set( CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES}
+         CACHE STRING
+         "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." )
+    unset( CMAKE_CONFIGURATION_TYPES )  # Only keep cache variable.
+    set_property( CACHE CMAKE_CONFIGURATION_TYPES PROPERTY ADVANCED TRUE )
+else()
+    if (NOT DEFINED CMAKE_BUILD_TYPE)
+        set( CMAKE_BUILD_TYPE ${CMAKE_DEFAULT_BUILD_TYPE} )
+    endif()
+    set( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
+         CACHE STRING
+         "Choose the type of build, options are: Debug, Release, RelWithDebInfo, MinSizeRel." )
+    unset( CMAKE_BUILD_TYPE )  # Only keep cache variable.
+    set_property( CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel" )
+    set_property( CACHE CMAKE_BUILD_TYPE PROPERTY ADVANCED FALSE )
+endif()
+unset( is_multi_config_generator )
+
+
 # Set the default install-prefix (if the user did not set one explicitly).
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR NOT CMAKE_INSTALL_PREFIX)
     set( CMAKE_INSTALL_PREFIX "/opt/ORGANIZATION/${ORGANIZATION_COMPILER_TAG}"
