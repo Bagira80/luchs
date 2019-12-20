@@ -82,6 +82,16 @@ endmacro()
 
 
 ##
+# @name enable_position_independent_code()
+# @brief Enables setting compiler-flags for generating position-independent code by default.
+#
+macro( enable_position_independent_code )
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_POLICY_DEFAULT_CMP0083 NEW)
+endmacro()
+
+
+##
 # @name enable_default_warnings_and_errors()
 # @brief Enables default-warnings and treats some as hard-errors.
 #

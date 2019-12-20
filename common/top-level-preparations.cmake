@@ -8,7 +8,8 @@
 #          * It sets up the compiler,
 #            * enabling some common required build settings,
 #            * setting the minimal supported C++ standard,
-#            * adjusting symbol-visibility to hide all symbols by default, and
+#            * adjusting symbol-visibility to hide all symbols by default,
+#            * enabling generation of position-independent code, and
 #            * enabling default warnings and errors.
 #          * It determines the compiler-tag and stores it in a cache-variable
 #            `ORGANIZATION_COMPILER_TAG`. (That variable should be helpful when providing hints to e.g.
@@ -52,6 +53,7 @@ include( "${CMAKE_CURRENT_LIST_DIR}/compiler-preparations.cmake" )
 set_required_build_settings()
 set_minimum_required_cxx_standard()
 set_default_visibility_to_hidden()
+enable_position_independent_code()
 enable_default_warnings_and_errors()
 
 
