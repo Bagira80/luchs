@@ -82,6 +82,21 @@ endmacro()
 
 
 ##
+# @name set_default_binary_suffixes_and_prefixes()
+# @brief Sets the suffixes and prefixes that shall be used for generated binaries by default.
+#
+macro( set_default_binary_suffixes_and_prefixes )
+    #set(CMAKE_EXECUTABLE_SUFFIX "")
+    #set(CMAKE_SHARED_LIBRARY_PREFIX "lib")
+    #set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+    #set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
+    #set(CMAKE_STATIC_LIBRARY_SUFFIX ".a")
+    set(CMAKE_SHARED_MODULE_PREFIX "organization-")
+    set(CMAKE_SHARED_MODULE_SUFFIX ".plugin")
+endmacro()
+
+
+##
 # @name enable_position_independent_code()
 # @brief Enables setting compiler-flags for generating position-independent code by default.
 #

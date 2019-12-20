@@ -10,6 +10,8 @@
 #            * by retrieving the current Git revision and providing it as version variable, and
 #            * by retrieving the current build number from the environment and providing it as
 #              version variable.
+#          * It provides some global settings for the top-level CMakeLists.txt file:
+#            * setting the default suffixes/prefixes for generated binaries
 #
 
 
@@ -37,4 +39,10 @@ endif ()
 if (DEFINED ENV${CURRENT_BUILD_NUMBER})
     set( PROJECT_BUILD_VERSION "ENV${CURRENT_BUILD_NUMBER}" )
     set( ${PROJECT_NAME}_BUILD_VERSION "ENV${CURRENT_BUILD_NUMBER}" )
+endif()
+
+
+# Settings only for top-level CMakeLists.txt file.
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set_default_binary_suffixes_and_prefixes()
 endif()
