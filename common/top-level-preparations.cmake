@@ -5,8 +5,11 @@
 #
 # @details This file contains different preparations for the top-level CMakeLists.txt file.
 #
-#          * It enables common required build settings, the minimal C++ standard and default
-#            warnings and errors.
+#          * It sets up the compiler,
+#            * enabling some common required build settings,
+#            * setting the minimal supported C++ standard,
+#            * adjusting symbol-visibility to hide all symbols by default, and
+#            * enabling default warnings and errors.
 #          * It determines the compiler-tag and stores it in a cache-variable
 #            `ORGANIZATION_COMPILER_TAG`. (That variable should be helpful when providing hints to e.g.
 #            `find_package` commands.)
@@ -48,6 +51,7 @@ store_compiler_tag( "ORGANIZATION_COMPILER_TAG" )
 include( "${CMAKE_CURRENT_LIST_DIR}/compiler-preparations.cmake" )
 set_required_build_settings()
 set_minimum_required_cxx_standard()
+set_default_visibility_to_hidden()
 enable_default_warnings_and_errors()
 
 

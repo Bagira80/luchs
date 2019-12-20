@@ -71,6 +71,17 @@ endmacro()
 
 
 ##
+# @name set_default_visibility_to_hidden()
+# @brief Sets the default visibility settings to hidden.
+#
+macro( set_default_visibility_to_hidden )
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    set(CMAKE_CXX_VISIBILITY_HIDDEN ON)
+    set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+endmacro()
+
+
+##
 # @name enable_default_warnings_and_errors()
 # @brief Enables default-warnings and treats some as hard-errors.
 #
