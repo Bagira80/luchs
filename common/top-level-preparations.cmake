@@ -18,6 +18,7 @@
 #          * It adds the "Modules" subdirectory to the search-path for CMake modules.
 #          * It sets the default install-prefix (path) that shall be used if the user does not
 #            provide one.
+#          * It sets the default install-prefix (path) for packaging if it is not set alrady.
 #
 
 # This file may only be called once and that should be from the top-level CMakeLists.txt file!
@@ -65,4 +66,8 @@ enable_default_warnings_and_errors()
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR NOT CMAKE_INSTALL_PREFIX)
     set( CMAKE_INSTALL_PREFIX "/opt/ORGANIZATION/${ORGANIZATION_COMPILER_TAG}"
          CACHE PATH "Install path prefix, prepended onto install directories." FORCE )
+endif()
+# Set the default install-prefix for packaging (if it is not set already).
+if (NOT CMAKE_PACKAGING_INSTALL_PREFIX)
+    set( CMAKE_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} )
 endif()
