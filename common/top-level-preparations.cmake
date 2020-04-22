@@ -19,6 +19,7 @@
 #          * It sets the default install-prefix (path) that shall be used if the user does not
 #            provide one.
 #          * It sets the default install-prefix (path) for packaging if it is not set alrady.
+#          * It provides some CMake options.
 #
 
 # This file may only be called once and that should be from the top-level CMakeLists.txt file!
@@ -110,3 +111,10 @@ endif()
 if (NOT CMAKE_PACKAGING_INSTALL_PREFIX)
     set( CMAKE_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} )
 endif()
+
+
+# Several options for enabling additional features.
+# -- Enable link-time optimization (globally).
+#    Note: This is just the CMake-option. If set, `enable_link_time_optimization()` must be called
+#    directly after the call to the top-most `project` command to really enable it.
+option( ENABLE_LTO "Enable Link-time Optimization (LTO)." OFF )

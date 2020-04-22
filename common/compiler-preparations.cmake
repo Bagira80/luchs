@@ -137,3 +137,19 @@ function( enable_default_warnings_and_errors )
     # Enable detection of violations of the C++ One Definition rule.
     add_link_options( $<$<CXX_COMPILER_ID:GNU,Clang>:LINKER:--detect-odr-violations> )
 endfunction()
+
+
+##
+# @name enable_link_time_optimization()
+# @brief Enables setting compiler-flags for link-time optimization.
+# @note This cannot be called before the call to the top-most `project` command!
+#
+function( enable_link_time_optimization )
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT is_supported OUTPUT error_reason LANGUAGES CXX C)
+    if (is_supported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE PARENT_SCOPE)
+    else()
+        message(SEND_ERROR "Link-time optimization (LTO/IPO) is not supported: ${error_reason}")
+    endif()
+endfunction()
