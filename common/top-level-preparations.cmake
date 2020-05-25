@@ -95,6 +95,8 @@ else()
     unset( CMAKE_BUILD_TYPE )  # Only keep cache variable.
     set_property( CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel" )
     set_property( CACHE CMAKE_BUILD_TYPE PROPERTY ADVANCED FALSE )
+    # Workaround: Disable "CMAKE_DEFAULT_BUILD_TYPE" again to prevent errors.
+    unset( CMAKE_DEFAULT_BUILD_TYPE CACHE )
 endif()
 unset( is_multi_config_generator )
 
