@@ -132,6 +132,9 @@ function( enable_default_warnings_and_errors )
                          $<$<CXX_COMPILER_ID:GNU,Clang>:-Werror=all> )
     add_compile_options( $<$<CXX_COMPILER_ID:GNU,Clang>:-Wextra>
                          $<$<CXX_COMPILER_ID:GNU,Clang>:-Werror=extra> )
+    # Disable some warnings/errors (again).
+    add_compile_options( $<$<CXX_COMPILER_ID:GNU>:-Wno-unknown-pragmas>
+                         $<$<CXX_COMPILER_ID:GNU>:-Wno-error=unknown-pragmas> )
     # Treat linker-warnings as errors, too.
     add_link_options( $<$<CXX_COMPILER_ID:GNU,Clang>:LINKER:--fatal-warnings> )
     # Enable detection of violations of the C++ One Definition rule.
