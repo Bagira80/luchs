@@ -160,3 +160,22 @@ function( enable_link_time_optimization )
         message(SEND_ERROR "Link-time optimization (LTO/IPO) is not supported: ${error_reason}")
     endif()
 endfunction()
+
+
+##
+# @name enable_building_with_time_trace()
+# @brief Enables generating time-tracing .json files while building.
+# @note This cannot be called before the call to the top-most `project` command!
+# @note Currently, this is only supported for Clang 11 or newer!
+# @note GCC might support this with GCC 11, too. (See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=92396)
+#
+function( enable_building_with_time_trace )
+    if (NOT ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND
+             "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER_EQUAL "11"))
+        message( WARNING "Cannot enable -ftime-trace for current compiler!" )
+        unset( ENABLE_BUILDING_WITH_TIME_TRACE CACHE )
+        option( ENABLE_BUILDING_WITH_TIME_TRACE "Enable -ftime-trace to generate time tracing .json files." OFF )
+    else()
+        add_compile_options( $<$<CXX_COMPILER_ID:Clang>:-ftime-trace> )
+    endif()
+endfunction()

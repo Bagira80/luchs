@@ -58,4 +58,8 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     if (ENABLE_LTO)
         enable_link_time_optimization()
     endif()
+    # Enable generating time-traces *.json globally?
+    if (ENABLE_BUILDING_WITH_TIME_TRACE)
+        enable_building_with_time_trace()
+    endif()
 endif()

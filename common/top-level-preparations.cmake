@@ -118,3 +118,8 @@ endif()
 #    Note: This is just the CMake-option. If set, `enable_link_time_optimization()` must be called
 #    directly after the call to the top-most `project` command to really enable it.
 option( ENABLE_LTO "Enable Link-time Optimization (LTO)." OFF )
+# -- Enable generation of time-trace *.json files (globally).
+#    Note: This is just the CMake-option. If set, `enable_building_with_time_trace()` must be
+#    called directly after the call to the top-most `project` command to really enable it.
+option( ENABLE_BUILDING_WITH_TIME_TRACE "Enable -ftime-trace to generate time tracing .json files." OFF )
+mark_as_advanced( ENABLE_BUILDING_WITH_TIME_TRACE )
