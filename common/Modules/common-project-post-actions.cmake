@@ -10,6 +10,7 @@
 #            * by retrieving the current Git revision and providing it as version variable, and
 #            * by retrieving the current build number from the environment and providing it as
 #              version variable.
+#          * It generates a source-file containing the build-configuration of the current module.
 #          * It provides some global settings for the top-level CMakeLists.txt file:
 #            * setting the default suffixes/prefixes for generated binaries,
 #            * (optionally) enabling link-time optimization
@@ -41,6 +42,12 @@ if (DEFINED ENV${CURRENT_BUILD_NUMBER})
     set( PROJECT_BUILD_VERSION "ENV${CURRENT_BUILD_NUMBER}" )
     set( ${PROJECT_NAME}_BUILD_VERSION "ENV${CURRENT_BUILD_NUMBER}" )
 endif()
+
+
+# Generate a source-file containing the build-configuration of the current module.
+include( ex_configure_file )
+ex_configure_file( "${ORGANIZATION_TEMPLATES_DIR}/Module_BuildConfig.cpp.in"
+                   "src/Module_BuildConfig_$<CONFIG>.cpp" )
 
 
 # Settings only for top-level CMakeLists.txt file.
