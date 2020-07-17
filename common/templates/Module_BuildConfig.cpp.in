@@ -1,0 +1,25 @@
+/**
+ * @file
+ * @details Contains configured options and settings for ${PROJECT_NAME}
+ * @note This source-file is auto-generated. Do not edit it directly!
+ */
+
+namespace ${project_namespace}::module_configuration
+{
+
+
+[[gnu::visibility("default")]] extern const char         MODULE_NAME[]          = "@PROJECT_NAME@";
+[[gnu::visibility("default")]] extern const unsigned int VERSION_MAJOR          = ${${PROJECT_NAME}_VERSION_MAJOR};
+[[gnu::visibility("default")]] extern const unsigned int VERSION_MINOR          = ${${PROJECT_NAME}_VERSION_MINOR};
+[[gnu::visibility("default")]] extern const unsigned int VERSION_PATCH          = ${${PROJECT_NAME}_VERSION_PATCH};
+[[gnu::visibility("default")]] extern const char         VERSION_REVISION[]     = "${${PROJECT_NAME}_VERSION_REVISION}";
+[[gnu::visibility("default")]] extern const char         VERSION_STRING[]       = "${${PROJECT_NAME}_VERSION}";
+[[gnu::visibility("default")]] extern const char         BUILD_VERSION_STRING[] = "${${PROJECT_NAME}_BUILD_VERSION}";
+[[gnu::visibility("default")]] extern const char         BUILD_TYPE[]           = "$<CONFIG>";
+[[gnu::visibility("default")]] extern const char *const  BUILD_OPTIONS[]
+{
+${${PROJECT_NAME}_BUILD_OPTIONS_STRING}    nullptr
+};
+
+
+}  // END: namespace ${project_namespace}::module_configuration
