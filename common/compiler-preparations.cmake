@@ -54,7 +54,9 @@ function( set_required_build_settings )
 
     # Every executable/library may only link against libraries that
     # it really uses and must resolve all its own dependencies!
-    add_link_options( LINKER:--as-needed,--allow-shlib-undefined,--no-undefined )
+    add_link_options( LINKER:--as-needed,--allow-shlib-undefined )
+    # In order to link the sanitizer support libraries automatically, the following option must be suppressed.
+    add_link_options( $<$<NOT:$<TARGET_EXISTS:sanitizers>>:LINKER:--no-undefined> )
 endfunction()
 
 
@@ -143,6 +145,24 @@ function( enable_default_warnings_and_errors )
     add_link_options( $<$<CXX_COMPILER_ID:GNU,Clang>:LINKER:--fatal-warnings> )
     # Enable detection of violations of the C++ One Definition rule.
     add_link_options( $<$<CXX_COMPILER_ID:GNU,Clang>:LINKER:--detect-odr-violations> )
+endfunction()
+
+
+##
+# @name optionally_use_sanitizers()
+# @brief Setup compiler/linker to use sanitizers if they are enabled.
+#
+function( optionally_use_sanitizers )
+    include( Sanitizers )
+    # If any sanitizer shall be enabled extract the related options
+    # from target `sanitizers` and apply them globally.
+    if (TARGET sanitizers)
+        add_compile_options( $<TARGET_PROPERTY:sanitizers,INTERFACE_COMPILE_OPTIONS> )
+        add_link_options(    $<TARGET_PROPERTY:sanitizers,INTERFACE_LINK_OPTIONS> )
+        if (ORGANIZATION_COMPILER_TAG MATCHES "clang.*" AND NOT USE_LLD_LINKER)
+            message( SEND_ERROR "Sanitizers require the LLD linker when used with Clang (in order to work properly)!" )
+        endif()
+    endif()
 endfunction()
 
 

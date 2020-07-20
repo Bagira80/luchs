@@ -61,6 +61,7 @@ set_default_visibility_to_hidden()
 set_default_library_postfixes()
 enable_position_independent_code()
 enable_default_warnings_and_errors()
+optionally_use_sanitizers()
 
 
 # Store the default build-type in the CMake cache (if not already).
