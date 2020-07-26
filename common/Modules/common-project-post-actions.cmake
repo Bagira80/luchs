@@ -62,4 +62,10 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     if (ENABLE_BUILDING_WITH_TIME_TRACE)
         enable_building_with_time_trace()
     endif()
+    # Create a target for generating API documentation.
+    if (NOT TARGET apidoc)
+        include( create_apidoc_target )
+        create_apidoc_target( TARGET_NAME ${PROJECT_NAME}-apidoc )
+        add_custom_target( apidoc DEPENDS ${PROJECT_NAME}-apidoc )  # Global target for e.g. `make apidoc`.
+    endif()
 endif()
