@@ -33,6 +33,11 @@ set( CMAKE_USER_MAKE_RULES_OVERRIDE_C   "${CMAKE_CURRENT_LIST_DIR}/override-cmak
 set( CMAKE_USER_MAKE_RULES_OVERRIDE_CXX "${CMAKE_CURRENT_LIST_DIR}/override-cmake-defaults-for-cxx.cmake" )
 
 
+# Always generate the compilation database, which will aid other tools.
+set( CMAKE_EXPORT_COMPILE_COMMANDS TRUE
+     CACHE BOOL "Enable/Disable output of compile commands during generation." FORCE )
+
+
 # Load the helper-functions for determining/storing the compiler-tag
 # and store that tag in the CMake-cache as `ORGANIZATION_COMPILER_TAG`.
 include( "${CMAKE_CURRENT_LIST_DIR}/compiler-tag.cmake" )
