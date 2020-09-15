@@ -111,6 +111,30 @@ endmacro()
 
 
 ##
+# @name set_default_install_rpath()
+# @brief Sets the RPATH that shall be used by default when installing executables/libraries.
+#
+function( set_default_install_rpath )
+    # Calculate relative path from ${CMAKE_INSTALL_BINDIR} to ${CMAKE_INSTALL_LIBDIR}.
+    include( GNUInstallDirs )
+    file( RELATIVE_PATH relative_path_to_libdir
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+    )
+    # Use relative RPATH for internal dependencies.
+    list( PREPEND CMAKE_INSTALL_RPATH
+          "$ORIGIN"
+          "$ORIGIN/${relative_path_to_libdir}"
+    )
+    list( REMOVE_DUPLICATES CMAKE_INSTALL_RPATH )
+    set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}" PARENT_SCOPE )
+
+    # Use absolute RPATH for external dependencies.
+    set( CMAKE_INSTALL_RPATH_USE_LINK_PATH ON PARENT_SCOPE )
+endfunction()
+
+
+##
 # @name enable_position_independent_code()
 # @brief Enables setting compiler-flags for generating position-independent code by default.
 #

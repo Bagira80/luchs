@@ -124,3 +124,8 @@ option( ENABLE_LTO "Enable Link-time Optimization (LTO)." OFF )
 #    called directly after the call to the top-most `project` command to really enable it.
 option( ENABLE_BUILDING_WITH_TIME_TRACE "Enable -ftime-trace to generate time tracing .json files." OFF )
 mark_as_advanced( ENABLE_BUILDING_WITH_TIME_TRACE )
+# -- Globally use default RPATH settings when installing executables/libraries.
+#    Note: This is just the CMake-option. If set, `set_default_install_rpath()` must be
+#    called directly after the call to the top-most `project` command to really use it.
+option( USE_DEFAULT_INSTALL_RPATH "Use default RPATH settings when installing executables/libraries." ON )
+mark_as_advanced( USE_DEFAULT_INSTALL_RPATH )

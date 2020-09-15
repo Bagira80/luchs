@@ -62,6 +62,10 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     if (ENABLE_BUILDING_WITH_TIME_TRACE)
         enable_building_with_time_trace()
     endif()
+    # Globally use default RPATH settings when installing executables/libraries?
+    if (USE_DEFAULT_INSTALL_RPATH)
+        set_default_install_rpath()
+    endif()
     # Create a target for generating API documentation.
     if (NOT TARGET apidoc)
         include( create_apidoc_target )
