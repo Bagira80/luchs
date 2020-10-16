@@ -10,6 +10,7 @@
 #            * by retrieving the current Git revision and providing it as version variable, and
 #            * by retrieving the current build number from the environment and providing it as
 #              version variable.
+#          * It calculates additional project information for the currently processed project.
 #          * It generates a source-file containing the build-configuration of the current module.
 #          * It provides some global settings for the top-level CMakeLists.txt file:
 #            * setting the default suffixes/prefixes for generated binaries,
@@ -43,6 +44,22 @@ if (DEFINED ENV${CURRENT_BUILD_NUMBER})
     set( ${PROJECT_NAME}_BUILD_VERSION "ENV${CURRENT_BUILD_NUMBER}" )
 endif()
 
+
+# Calculate additional project information.
+include( calc_project_info )
+calc_project_info()
+message( DEBUG "--- ${project_namespace} ---\n"
+               "project_output_fullname     = ${project_output_fullname}\n"
+               "project_package_fullname    = ${project_package_fullname}\n"
+               "project_component_fullname  = ${project_component_fullname}\n"
+               "project_export_fullname     = ${project_export_fullname}\n"
+               "project_package_namespace   = ${project_package_namespace}\n"
+               "project_component_namespace = ${project_component_namespace}\n"
+               "project_export_namespace    = ${project_export_namespace}\n"
+               "project_package_name        = ${project_package_name}\n"
+               "project_component_name      = ${project_component_name}\n"
+               "project_export_name         = ${project_export_name}\n"
+               "project_export_parent_name  = ${project_export_parent_name}" )
 
 # Generate a source-file containing the build-configuration of the current module.
 include( ex_configure_file )
