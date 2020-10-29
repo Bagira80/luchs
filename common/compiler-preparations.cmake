@@ -173,6 +173,64 @@ endfunction()
 
 
 ##
+# @name enable_separate_debug_symbols( only_after_linking )
+# @brief Enables and configures creation of debug symbols in separate files.
+# @param only_after_linking Determines if splitting debug symbols only after linking or also when
+#        compiling object files. (Must be set to true if link-time-optimization is used.)
+# @note These are only generated for configurations "Debug" and "RelWithDebInfo".
+#
+function( enable_separate_debug_symbols only_after_linking )
+    # Canonicalize parameter value
+    if (only_after_linking)
+        set( only_after_linking "1" )
+    else ()
+        set( only_after_linking "0" )
+    endif()
+    # Enable splitting debugging information into separate .dwo files.
+    # Note: This does not work if LTO is enabled.
+    if (NOT only_after_linking)
+        # Note: Make sure the option is prepended to other "-g.*" options.
+        # Sadly, this does not work!
+        #add_compile_options( BEFORE $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gsplit-dwarf> )
+        # Alternative:
+        get_directory_property( prop COMPILE_OPTIONS )
+        list( PREPEND prop "$<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gsplit-dwarf>" )
+        set_directory_properties( PROPERTIES COMPILE_OPTIONS "${prop}" )
+    endif()
+    # In order to also create the .dwp files we create a script that needs to be run after linking.
+    set( script_content [==[#!/bin/sh
+        BINARY_FILE_DIR=$(dirname "$1")
+        BINARY_FILE_NAME=$(basename "$1")
+        BINARY_FILE_PATH="$1"
+        BASE_BUILD_DIR="@CMAKE_BINARY_DIR@"
+        NOT_IGNORED="$2"
+        if [ "$NOT_IGNORED" -eq "1" ] ; then
+            # Compiled with -gsplit-dwarf option?
+            if [ "@only_after_linking@" -eq "1" ] ; then
+                objcopy --only-keep-debug "${BINARY_FILE_PATH}" "${BINARY_FILE_PATH}.dwp"
+                objcopy --strip-debug "${BINARY_FILE_PATH}"
+                cd "${BINARY_FILE_DIR}"
+                objcopy --add-gnu-debuglink="${BINARY_FILE_NAME}.dwp" "${BINARY_FILE_NAME}"
+            else
+                cd "${BASE_BUILD_DIR}"
+                dwp -e "${BINARY_FILE_PATH}"
+            fi
+        fi
+    ]==])
+    # Generate that script in the global scripts directory and set appropriate permissions.
+    file( CONFIGURE OUTPUT "${ORGANIZATION_CMAKE_SCRIPTS_DIR}/create_separate_debug_symbols_file.sh"
+        CONTENT "${script_content}" @ONLY NEWLINE_STYLE UNIX
+    )
+    file( CHMOD "${ORGANIZATION_CMAKE_SCRIPTS_DIR}/create_separate_debug_symbols_file.sh"
+        PERMISSIONS
+            OWNER_READ OWNER_WRITE OWNER_EXECUTE
+            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+            WORLD_READ
+    )
+endfunction()
+
+
+##
 # @name enable_embedding_more_debugging_info()
 # @brief Enables embedding more (detailed) debugging information into the compiled artifacts.
 # @note These settings have only effect for configurations "Debug" and "RelWithDebInfo".

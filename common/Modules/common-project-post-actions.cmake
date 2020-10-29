@@ -75,6 +75,11 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     if (ENABLE_LTO)
         enable_link_time_optimization()
     endif()
+    # Enable creation of separate files with debugging symbols?
+    if (ENABLE_SEPARATE_DEBUG_SYMBOLS)
+        # Note: Will use special handling if LTO is enabled.
+        enable_separate_debug_symbols( ${ENABLE_LTO} )
+    endif()
     # Enable generating time-traces *.json globally?
     if (ENABLE_BUILDING_WITH_TIME_TRACE)
         enable_building_with_time_trace()
