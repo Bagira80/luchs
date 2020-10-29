@@ -173,6 +173,34 @@ endfunction()
 
 
 ##
+# @name enable_embedding_more_debugging_info()
+# @brief Enables embedding more (detailed) debugging information into the compiled artifacts.
+# @note These settings have only effect for configurations "Debug" and "RelWithDebInfo".
+#
+function( enable_embedding_more_debugging_info )
+    # Enable more detailed debugging information (optimized for usage with GDB / LLDB).
+    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gdwarf-5>
+                         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Debug,RelWithDebInfo>>:-fvar-tracking-assignments>
+                         $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-g3>
+                         $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-ggdb3> )
+    # Enable producing compressed debug sections.
+    # Note: This requires a modern linker, like the Gold-linker!
+    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gz=zlib> )  # Implies the following linker-option.
+    #add_link_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:LINKER:--compress-debug-sections=zlib> )
+    # Enable building a GDB index.
+    # Note: This requires a modern linker, like the Gold-linker!
+    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-ggnu-pubnames> )
+    add_link_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:LINKER:--gdb-index> )
+    # Enable some further optimizations for handling debugging symbols.
+    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-fdebug-types-section> )
+    add_link_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>,$<NOT:$<BOOL:${USE_LLD_LINKER}>>>:LINKER:--strip-debug-gdb> )
+
+    # Strip LTO sections if not compiling with LTO enabled.
+    add_link_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>,$<NOT:$<BOOL:${USE_LLD_LINKER}>>,$<NOT:$<BOOL:${ENABLE_LTO}>>>:LINKER:--strip-lto-sections> )
+endfunction()
+
+
+##
 # @name optionally_use_sanitizers()
 # @brief Setup compiler/linker to use sanitizers if they are enabled.
 #

@@ -61,6 +61,7 @@ set_default_visibility_to_hidden()
 set_default_library_postfixes()
 enable_position_independent_code()
 enable_default_warnings_and_errors()
+enable_embedding_more_debugging_info()
 optionally_use_sanitizers()
 
 
