@@ -154,6 +154,11 @@ function(load_common_boost GLOBAL REQUIRED)
         if (Boost_ALL_TARGETS)
             if (GLOBAL)
                 set_target_properties( ${Boost_ALL_TARGETS} PROPERTIES IMPORTED_GLOBAL TRUE )
+                find_and_store_associated_runtime_debian_package(
+                    TARGETS ${Boost_ALL_TARGETS}
+                    GROUP_NAME Boost
+                    TIMEOUT 30
+                )
             endif()
         endif()
     endif()
