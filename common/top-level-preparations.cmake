@@ -28,6 +28,11 @@ set( ORGANIZATION_TEMPLATES_DIR "${ORGANIZATION_CMAKE_SCRIPTS_DIR}/templates" )
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules" )
 
 
+# Change some CMake defaults for C and C++.
+set( CMAKE_USER_MAKE_RULES_OVERRIDE_C   "${CMAKE_CURRENT_LIST_DIR}/override-cmake-defaults-for-cc.cmake" )
+set( CMAKE_USER_MAKE_RULES_OVERRIDE_CXX "${CMAKE_CURRENT_LIST_DIR}/override-cmake-defaults-for-cxx.cmake" )
+
+
 # Load the helper-functions for determining/storing the compiler-tag
 # and store that tag in the CMake-cache as `ORGANIZATION_COMPILER_TAG`.
 include( "${CMAKE_CURRENT_LIST_DIR}/compiler-tag.cmake" )
