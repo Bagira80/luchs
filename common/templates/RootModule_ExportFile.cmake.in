@@ -1,0 +1,176 @@
+##
+# @file
+#
+# This CMake configuration file, installed as part of the @PackageName@ application build
+# and installation procedure done by CMake, provides support for find_package(@PackageName@).
+#
+# A typical use might be:
+#
+# find_package(@PackageName@ 3.0 REQUIRED COMPONENTS core::basics core::optional PATHS /opt/ORGANIZATION/gcc9)
+#
+# On success, the above invocation would define the targets @PackageName@::core::basics,
+# and @PackageName@::core::optional. (Additional targets might be defined, too.)
+#
+# Requesting no component will make all installed components available, as in the following
+# example:
+#
+# find_package(@PackageName@ 3.0 REQUIRED)
+#
+# In this case a variable @PackageName@_ALL_TARGETS will be set and will contain the names
+# of all created targets.
+#
+# The following variables control the verbosity of the output:
+#
+# @PackageName@_VERBOSE:            Enable verbose output
+# @PackageName@_DEBUG:              Enable debug (even more verbose) output
+
+
+# Alternative package-names used internally.
+string( TOUPPER "__@PackageName@" __PACKAGE_NAME )
+string( TOLOWER "__@PackageName@" __package_name )
+
+
+# Print verbose/debug messages.
+if (@PackageName@_VERBOSE OR @PackageName@_DEBUG )
+
+    message( STATUS "Found @PackageName@ ${@PackageName@_VERSION} at ${@PackageName@_DIR}" )
+
+    # Output requested configuration (f.ex. "REQUIRED COMPONENTS core::basics")
+
+    if (@PackageName@_FIND_QUIETLY)
+        set( ${__PACKAGE_NAME}_CONFIG "${${__PACKAGE_NAME}_CONFIG} QUIET")
+    endif()
+
+    if (@PackageName@_FIND_REQUIRED)
+        set( ${__PACKAGE_NAME}_CONFIG "${${__PACKAGE_NAME}_CONFIG} REQUIRED")
+    endif()
+
+    foreach( ${__package_name}_comp IN LISTS @PackageName@_FIND_COMPONENTS )
+        if (${@PackageName@_FIND_REQUIRED_${${__package_name}_comp}})
+            list(APPEND ${__PACKAGE_NAME}_COMPONENTS ${${__package_name}_comp})
+        else()
+            list(APPEND ${__PACKAGE_NAME}_OPTIONAL_COMPONENTS ${${__package_name}_comp})
+        endif()
+    endforeach()
+
+    if (${__PACKAGE_NAME}_COMPONENTS)
+        set( ${__PACKAGE_NAME}_CONFIG "${${__PACKAGE_NAME}_CONFIG} COMPONENTS ${${__PACKAGE_NAME}_COMPONENTS}" )
+    endif()
+
+    if (${__PACKAGE_NAME}_OPTIONAL_COMPONENTS)
+        set( ${__PACKAGE_NAME}_CONFIG "${${__PACKAGE_NAME}_CONFIG} OPTIONAL_COMPONENTS ${${__PACKAGE_NAME}_OPTIONAL_COMPONENTS}" )
+    endif()
+
+    if (${__PACKAGE_NAME}_CONFIG)
+        message( STATUS "  Requested configuration:${${__PACKAGE_NAME}_CONFIG}" )
+    endif()
+
+    unset( ${__PACKAGE_NAME}_CONFIG )
+    unset( ${__PACKAGE_NAME}_COMPONENTS )
+    unset( ${__PACKAGE_NAME}_OPTIONAL_COMPONENTS )
+
+endif()
+
+# Search for single component.
+macro( __@PackageName@_find_component comp required quiet )
+
+    string( REPLACE "__" "" __lower_case_package_name "${__package_name}" )
+
+    set( ${__PACKAGE_NAME}_QUIET )
+    if (@PackageName@_FIND_QUIETLY OR ${quiet})
+        set( ${__PACKAGE_NAME}_QUIET QUIET )
+    endif()
+
+    set( ${__PACKAGE_NAME}_REQUIRED )
+    if (${required} AND @PackageName@_FIND_REQUIRED)
+        set( ${__PACKAGE_NAME}_REQUIRED REQUIRED )
+    endif()
+
+    # Variable ${comp} might consist of several sub-components, separated by `::`.
+    # Replace the `::` by `_`.
+    string( REPLACE "::" "_" ${__package_name}_flat_comp "${comp}" )
+
+    get_filename_component( ${__PACKAGE_NAME}_CMAKEDIR "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE )
+
+    set( ${__PACKAGE_NAME}_EXACT_VERSION )
+    if (@PackageName@_VERSION)
+        set( ${__PACKAGE_NAME}_EXACT_VERSION "${@PackageName@_VERSION} EXACT" )
+    endif()
+
+    if (@PackageName@_DEBUG)
+        message( STATUS "@PackageName@Config: find_package(${__lower_case_package_name}_${${__package_name}_flat_comp} ${${__PACKAGE_NAME}_EXACT_VERSION} CONFIG ${${__PACKAGE_NAME}_REQUIRED} ${${__PACKAGE_NAME}_QUIET} HINTS ${${__PACKAGE_NAME}_CMAKEDIR})" )
+    endif()
+    find_package( ${__lower_case_package_name}_${${__package_name}_flat_comp} ${${__PACKAGE_NAME}_EXACT_VERSION} CONFIG ${${__PACKAGE_NAME}_REQUIRED} ${${__PACKAGE_NAME}_QUIET} HINTS ${${__PACKAGE_NAME}_CMAKEDIR} )
+
+    set( ${__package_name}_comp_found ${${__lower_case_package_name}_${${__package_name}_flat_comp}_FOUND} )
+
+    # FindPackageHandleStandardArgs expects <package>_<component>_FOUND
+    set( @PackageName@_${comp}_FOUND ${${__package_name}_comp_found} )
+
+    unset( __lower_case_package_name )
+    unset( ${__PACKAGE_NAME}_REQUIRED )
+    unset( ${__PACKAGE_NAME}_QUIET )
+    unset( ${__PACKAGE_NAME}_CMAKEDIR )
+    unset( ${__package_name}_flat_comp )
+    unset( ${__package_name}_comp_found )
+
+endmacro()
+
+macro(__@PackageName@_find_all_components)
+
+    string( REPLACE "__" "" __lower_case_package_name "${__package_name}" )
+
+    get_filename_component( ${__PACKAGE_NAME}_CMAKEDIR "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE )
+
+   # Search for all available component-configuration directories...
+    file( GLOB ${__package_name}_all_components
+          LIST_DIRECTORIES true RELATIVE "${${__PACKAGE_NAME}_CMAKEDIR}"
+         "${${__PACKAGE_NAME}_CMAKEDIR}/${__lower_case_package_name}_*")
+    # ...and extract component names from it.
+    string(REGEX REPLACE "${__lower_case_package_name}_([_a-z0-9]+)" "\\1"
+           ${__package_name}_all_components "${${__package_name}_all_components}")
+
+    if (@PackageName@_DEBUG)
+        message( STATUS "@PackageName@Config: discovered components: ${${__package_name}_all_components}" )
+    endif()
+
+    # Try to find each component.
+    foreach( ${__package_name}_comp IN LISTS ${__package_name}_all_components )
+
+        __@PackageName@_find_component( ${${__package_name}_comp} 0 1 )
+
+        # Append to list of all targets (if found).
+        if (@PackageName@_${${__package_name}_comp}_FOUND )
+            list( APPEND @PackageName@_ALL_TARGETS @PackageName@::${${__package_name}_comp})
+        endif()
+
+    endforeach()
+
+    unset( __lower_case_package_name )
+    unset( ${__package_name}_all_components )
+
+    if (@PackageName@_DEBUG)
+        message( STATUS "@PackageName@Config: @PackageName@_ALL_TARGETS: ${@PackageName@_ALL_TARGETS}" )
+    endif()
+
+endmacro()
+
+
+# Find components
+
+if (NOT @PackageName@_FIND_COMPONENTS)
+
+    set( @PackageName@_ALL_TARGETS )
+    __@PackageName@_find_all_components()
+
+else()
+
+    foreach( ${__package_name}_comp IN LISTS @PackageName@_FIND_COMPONENTS )
+        __@PackageName@_find_component( ${${__package_name}_comp} ${@PackageName@_FIND_REQUIRED_${${__package_name}_comp}} 0 )
+    endforeach()
+
+endif()
+
+# Remove alternative package-names again.
+unset( __PACKAGE_NAME )
+unset( __package_name )
