@@ -97,6 +97,18 @@ endmacro()
 
 
 ##
+# @name set_default_library_postfixes()
+# @brief Sets the config-specific postfixes that shall be used for generated libraries by default.
+#
+macro( set_default_library_postfixes )
+    set(CMAKE_DEBUG_POSTFIX "_dbg")
+    set(CMAKE_MINSIZEREL_POSTFIX "_small")
+    set(CMAKE_RELEASE_POSTFIX "")
+    set(CMAKE_RELWITHDEBINFO_POSTFIX "")
+endmacro()
+
+
+##
 # @name enable_position_independent_code()
 # @brief Enables setting compiler-flags for generating position-independent code by default.
 #

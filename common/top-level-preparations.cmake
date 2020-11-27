@@ -9,6 +9,7 @@
 #            * enabling some common required build settings,
 #            * setting the minimal supported C++ standard,
 #            * adjusting symbol-visibility to hide all symbols by default,
+#            * setting the default postfixes for generated libraries,
 #            * enabling generation of position-independent code, and
 #            * enabling default warnings and errors.
 #          * It determines the compiler-tag and stores it in a cache-variable
@@ -53,6 +54,7 @@ include( "${CMAKE_CURRENT_LIST_DIR}/compiler-preparations.cmake" )
 set_required_build_settings()
 set_minimum_required_cxx_standard()
 set_default_visibility_to_hidden()
+set_default_library_postfixes()
 enable_position_independent_code()
 enable_default_warnings_and_errors()
 
