@@ -135,7 +135,8 @@ function( enable_default_warnings_and_errors )
     # Disable some warnings/errors (again).
     add_compile_options( $<$<CXX_COMPILER_ID:GNU>:-Wno-unknown-pragmas>
                          $<$<CXX_COMPILER_ID:GNU>:-Wno-error=unknown-pragmas>
-                         $<$<CXX_COMPILER_ID:Clang>:-Wno-error=zero-length-array> )
+                         $<$<CXX_COMPILER_ID:Clang>:-Wno-error=zero-length-array>
+                         $<$<CXX_COMPILER_ID:Clang>:-Wno-error=return-type-c-linkage> )
     # Treat linker-warnings as errors, too.
     add_link_options( $<$<CXX_COMPILER_ID:GNU,Clang>:LINKER:--fatal-warnings> )
     # Enable detection of violations of the C++ One Definition rule.
