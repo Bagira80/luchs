@@ -1,0 +1,152 @@
+##
+# @file
+# @note This CMakeLists.txt file must be added as subdirectory at the end of the associated
+#       module's CMakeLists.txt file.
+#
+# @details Contains the settings and commands for creating (Debian-)packages for the built
+#          artifacts (libraries, exectuables, config-files and public header-files).
+#
+
+include( components_associated_targets )
+
+# ----------------------------------------------------------------------
+# General settings for packaging of the current project
+# ----------------------------------------------------------------------
+
+set( CPACK_PACKAGE_NAME                 "${PROJECT_NAME}" )
+set( CPACK_PACKAGE_VENDOR               "ORGANIZATION" )
+set( CPACK_PACKAGE_CONTACT              "ORGANIZATION-Support Team <support@organization>" )
+set( CPACK_PACKAGE_HOMEPAGE_URL         "${PROJECT_HOMEPAGE_URL}" )
+set( CPACK_PACKAGE_DESCRIPTION_SUMMARY  "${PROJECT_DESCRIPTION}" )
+set( CPACK_PACKAGE_DESCRIPTION_FILE     "${PROJECT_SOURCE_DIR}/cmake/package-description.txt" )
+file( READ "${CPACK_PACKAGE_DESCRIPTION_FILE}" CPACK_PACKAGE_DESCRIPTION )
+set( CPACK_PACKAGE_VERSION_MAJOR        "${PROJECT_VERSION_MAJOR}" )
+set( CPACK_PACKAGE_VERSION_MINOR        "${PROJECT_VERSION_MINOR}" )
+set( CPACK_PACKAGE_VERSION_PATCH        "${PROJECT_VERSION_PATCH}" )
+set( CPACK_PACKAGE_VERSION              "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
+set( CPACK_VERBATIM_VARIABLES           YES )
+set( CPACK_INSTALL_CMAKE_PROJECTS       "${PROJECT_BINARY_DIR};${PROJECT_NAME};ALL;/")
+set( CPACK_PACKAGING_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}" )
+set( CPACK_PACKAGE_DIRECTORY            "${CMAKE_BINARY_DIR}/packages" )  # Subdirectory "packages" in top-most build-directory.
+set( CPACK_OUTPUT_CONFIG_FILE           "${CMAKE_CURRENT_BINARY_DIR}/CPackConfig_${project_output_fullname}.cmake" )
+
+
+# ----------------------------------------------------------------------
+# Some default settings for using the DEB-generator
+# ----------------------------------------------------------------------
+
+set( CPACK_GENERATOR                                 DEB )
+set( CPACK_DEB_COMPONENT_INSTALL                     ON )
+set( CPACK_COMPONENTS_GROUPING                       ONE_PER_GROUP )
+set( CPACK_DEBIAN_COMPRESSION_TYPE                   "xz" )
+#set( CPACK_DEBIAN_DEBUGINFO_PACKAGE                  ON )
+set( CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS           YES )
+set( CPACK_DEBIAN_PACKAGE_SHLIBDEPS                  YES )
+set( CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS            YES )
+set( CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY     "=" )
+set( CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION  YES )
+set( CPACK_DEBIAN_PACKAGE_RELEASE                    "1" )
+if (DEFINED ENV{CURRENT_BUILD_NUMBER})
+    set( CPACK_DEBIAN_PACKAGE_RELEASE                "$ENV{CURRENT_BUILD_NUMBER}" )
+    if (NOT CPACK_DEBIAN_PACKAGE_RELEASE MATCHES ^[1-9][0-9]*$)
+        message( WARNING "Environment variable CURRENT_BUILD_NUMBER is supposed to be a plain number (or not set at all)!" )
+    endif()
+endif()
+set( CPACK_DEBIAN_PACKAGE_COMBINED_VERSION "${CPACK_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}" )
+
+
+# ----------------------------------------------------------------------
+# Component-specific settings for using the DEB-generator
+# ----------------------------------------------------------------------
+
+get_cmake_property( CPACK_COMPONENTS_ALL COMPONENTS )
+
+set( component "${project_component_fullname}-Runtime" )
+if (component IN_LIST CPACK_COMPONENTS_ALL)
+    string( TOUPPER ${component} COMP )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_NAME       ${project_package_fullname}-${ORGANIZATION_COMPILER_TAG} )
+    set( CPACK_DEBIAN_${COMP}_FILE_NAME          DEB-DEFAULT )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_SECTION    "libdevel" )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_SHLIBDEPS  ON )
+    set( current_package "${CPACK_DEBIAN_${COMP}_PACKAGE_NAME} (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
+    # Store name/version of Debian package in associated target.
+    set_associated_target_properties( FOR_ALL_CONFIGURATIONS  COMPONENTS ${component}
+        PROPERTIES
+            ASSOCIATED_RUNTIME_DEBIAN_PACKAGE "${current_package}"
+    )
+endif()
+set( component "${project_component_fullname}-Development" )
+if (component IN_LIST CPACK_COMPONENTS_ALL)
+    string( TOUPPER ${component} COMP )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_NAME       ${project_package_fullname}-${ORGANIZATION_COMPILER_TAG}-dev )
+    set( CPACK_DEBIAN_${COMP}_FILE_NAME          DEB-DEFAULT )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_SECTION    "libdevel" )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_SHLIBDEPS  ON )
+    set( current_package "${CPACK_DEBIAN_${COMP}_PACKAGE_NAME} (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
+    # Store name/version of Debian package in associated target.
+    set_associated_target_properties( FOR_ALL_CONFIGURATIONS  COMPONENTS ${component}
+        PROPERTIES
+            ASSOCIATED_RUNTIME_DEBIAN_PACKAGE "${current_package}"
+    )
+endif()
+set( component "${project_component_fullname}-DevHelp" )
+if (component IN_LIST CPACK_COMPONENTS_ALL)
+    string( TOUPPER ${component} COMP )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_NAME       ${project_package_fullname}-${ORGANIZATION_COMPILER_TAG}-devhelp )
+    set( CPACK_DEBIAN_${COMP}_FILE_NAME          DEB-DEFAULT )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_SECTION    "libdevel" )
+    set( CPACK_DEBIAN_${COMP}_PACKAGE_SHLIBDEPS  ON )
+    set( current_package "${CPACK_DEBIAN_${COMP}_PACKAGE_NAME} (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
+    # Store name/version of Debian package in associated target.
+    set_associated_target_properties( FOR_ALL_CONFIGURATIONS  COMPONENTS ${component}
+        PROPERTIES
+            ASSOCIATED_RUNTIME_DEBIAN_PACKAGE "${current_package}"
+    )
+endif()
+
+
+# ----------------------------------------------------------------------
+# Component- and group-specific settings for CPack
+# ----------------------------------------------------------------------
+
+## Load CPack
+include( CPack )
+
+
+# The Runtime component.
+cpack_add_component( ${project_component_fullname}-Runtime
+    DISPLAY_NAME   "Runtime"
+    DESCRIPTION    "${CPACK_PACKAGE_DESCRIPTION}\nThis package contains the runtime (shared libraries and executables) for such\napplications."
+    INSTALL_TYPES  Full Developer Minimal
+    REQUIRED
+)
+# The Development component.
+cpack_add_component( ${project_component_fullname}-Development
+    DISPLAY_NAME   "Developer pre-requisites"
+    DESCRIPTION    "${CPACK_PACKAGE_DESCRIPTION}\nThis package contains the development files (headers and static libraries)\nneeded for building such applications."
+    INSTALL_TYPES  Full Developer
+    DEPENDS        ${project_component_fullname}-Runtime
+)
+# The (optional) ApiDocs component.
+if (${project_component_fullname}-ApiDocs IN_LIST CPACK_COMPONENTS_ALL)
+    cpack_add_component( ${project_component_fullname}-ApiDocs
+        DISPLAY_NAME   "API documentation"
+        DESCRIPTION    "${CPACK_PACKAGE_DESCRIPTION}\nThis package contains the API documentation."
+        INSTALL_TYPES  Full Developer
+        DEPENDS        ${project_component_fullname}-Development
+        DISABLED
+        GROUP          ${project_component_fullname}-DevHelp
+    )
+endif()
+
+# The DevHelp component-group.
+cpack_add_component_group( ${project_component_fullname}-DevHelp
+    DISPLAY_NAME   "Documentation"
+    DESCRIPTION    "Code samples and API documentation"
+    PARENT_GROUP   ${project_component_fullname}-SDK
+)
+
+# The install types:
+cpack_add_install_type( Full )
+cpack_add_install_type( Minimal )
+cpack_add_install_type( Developer DISPLAY_NAME "SDK Development" )
