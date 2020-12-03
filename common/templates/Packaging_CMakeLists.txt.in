@@ -72,6 +72,15 @@ if (component IN_LIST CPACK_COMPONENTS_ALL)
         set( CPACK_DEBIAN_${COMP}_PACKAGE_SUGGESTS  "${project_package_fullname}-${ORGANIZATION_COMPILER_TAG}-dbgsym (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
     endif()
     set( current_package "${CPACK_DEBIAN_${COMP}_PACKAGE_NAME} (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
+    # Set packages this component depends on.
+    get_linked_target_properties( CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS
+        FOR_ALL_CONFIGURATIONS
+        COMPONENTS ${component}
+        PROPERTIES
+            ASSOCIATED_RUNTIME_DEBIAN_PACKAGE
+    )
+    list( REMOVE_DUPLICATES CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS )
+    list( REMOVE_ITEM CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS "${current_package}" )
     # Store name/version of Debian package in associated target.
     set_associated_target_properties( FOR_ALL_CONFIGURATIONS  COMPONENTS ${component}
         PROPERTIES
@@ -87,6 +96,15 @@ if (component IN_LIST CPACK_COMPONENTS_ALL)
     set( CPACK_DEBIAN_${COMP}_PACKAGE_SECTION    "libdevel" )
     set( CPACK_DEBIAN_${COMP}_PACKAGE_SHLIBDEPS  ON )
     set( current_package "${CPACK_DEBIAN_${COMP}_PACKAGE_NAME} (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
+    # Set packages this component depends on.
+    get_linked_target_properties( CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS
+        FOR_ALL_CONFIGURATIONS
+        COMPONENTS ${component}
+        PROPERTIES
+            ASSOCIATED_RUNTIME_DEBIAN_PACKAGE
+    )
+    list( REMOVE_DUPLICATES CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS )
+    list( REMOVE_ITEM CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS "${current_package}" )
     # Store name/version of Debian package in associated target.
     set_associated_target_properties( FOR_ALL_CONFIGURATIONS  COMPONENTS ${component}
         PROPERTIES
@@ -101,6 +119,15 @@ if (component IN_LIST CPACK_COMPONENTS_ALL)
     set( CPACK_DEBIAN_${COMP}_PACKAGE_SECTION    "libdevel" )
     set( CPACK_DEBIAN_${COMP}_PACKAGE_SHLIBDEPS  ON )
     set( current_package "${CPACK_DEBIAN_${COMP}_PACKAGE_NAME} (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
+    # Set packages this component depends on.
+    get_linked_target_properties( CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS
+        FOR_ALL_CONFIGURATIONS
+        COMPONENTS ${component}
+        PROPERTIES
+            ASSOCIATED_RUNTIME_DEBIAN_PACKAGE
+    )
+    list( REMOVE_DUPLICATES CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS )
+    list( REMOVE_ITEM CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS "${current_package}" )
     # Store name/version of Debian package in associated target.
     set_associated_target_properties( FOR_ALL_CONFIGURATIONS  COMPONENTS ${component}
         PROPERTIES
@@ -115,6 +142,15 @@ if (component IN_LIST CPACK_COMPONENTS_ALL)
     set( CPACK_DEBIAN_${COMP}_PACKAGE_SECTION    "libdevel" )
     set( CPACK_DEBIAN_${COMP}_PACKAGE_SHLIBDEPS  ON )
     set( current_package "${CPACK_DEBIAN_${COMP}_PACKAGE_NAME} (= ${CPACK_DEBIAN_PACKAGE_COMBINED_VERSION})" )
+    # Set packages this component depends on.
+    get_linked_target_properties( CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS
+        FOR_ALL_CONFIGURATIONS
+        COMPONENTS ${component}
+        PROPERTIES
+            ASSOCIATED_RUNTIME_DEBIAN_PACKAGE
+    )
+    list( REMOVE_DUPLICATES CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS )
+    list( REMOVE_ITEM CPACK_DEBIAN_${COMP}_PACKAGE_DEPENDS "${current_package}" )
     # Store name/version of Debian package in associated target.
     set_associated_target_properties( FOR_ALL_CONFIGURATIONS  COMPONENTS ${component}
         PROPERTIES
