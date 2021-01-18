@@ -29,6 +29,7 @@ set( CPACK_INSTALL_CMAKE_PROJECTS       "${PROJECT_BINARY_DIR};${PROJECT_NAME};A
 set( CPACK_PACKAGING_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}" )
 set( CPACK_PACKAGE_DIRECTORY            "${CMAKE_BINARY_DIR}/packages" )  # Subdirectory "packages" in top-most build-directory.
 set( CPACK_OUTPUT_CONFIG_FILE           "${CMAKE_CURRENT_BINARY_DIR}/CPackConfig_${project_output_fullname}.cmake" )
+set( CPACK_PROPERTIES_FILE              "${CMAKE_CURRENT_BINARY_DIR}/CPackProperties.cmake" )
 
 
 # ----------------------------------------------------------------------
