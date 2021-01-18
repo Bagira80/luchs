@@ -35,6 +35,11 @@ set( ORGANIZATION_CMAKE_SCRIPTS_DIR "${CMAKE_CURRENT_LIST_DIR}" )
 set( ORGANIZATION_TEMPLATES_DIR "${ORGANIZATION_CMAKE_SCRIPTS_DIR}/templates" )
 # Put the "Modules" subdirectory (of the current directory) into the modules search-path.
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules" )
+# Put additional "Modules-<CMAKE-VERSION>" subdirectories into the modules search-path.
+# Note: These provide functionality from later CMake versions.
+if (CMAKE_VERSION VERSION_LESS "3.20")
+    list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules-3.19" )
+endif()
 
 
 # Change some CMake defaults for C and C++.
