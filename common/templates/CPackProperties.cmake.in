@@ -1,0 +1,16 @@
+##
+# @file
+# @brief This file contains additional settings for CPack
+#
+# @details Contains additional settings for creating (Debian-)packages for the built
+#          artifacts (libraries, exectuables, config-files and public header-files).
+#          If the variable `CPACK_PROPERTIES_FILE` points to this file it will
+#          automatically be loaded by the generated CPackConfig file.
+#
+
+# Load the possibly existing files with additional settings for using the SHLIBDEPS functionality.
+foreach( config IN ITEMS @CMAKE_BUILD_TYPE@ @CMAKE_CONFIGURATION_TYPES@ )
+    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/cpack_shlibdeps_private_search_dirs_${config}.cmake")
+        include( "${CMAKE_CURRENT_LIST_DIR}/cpack_shlibdeps_private_search_dirs_${config}.cmake" )
+    endif()
+endforeach()
