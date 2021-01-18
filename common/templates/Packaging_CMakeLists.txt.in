@@ -61,6 +61,9 @@ set( CPACK_DEBIAN_PACKAGE_COMBINED_VERSION "${CPACK_PACKAGE_VERSION}-${CPACK_DEB
 
 get_cmake_property( CPACK_COMPONENTS_ALL COMPONENTS )
 
+# Only package components associated with the current project!
+list( FILTER CPACK_COMPONENTS_ALL INCLUDE REGEX "${project_component_fullname}.*" )
+
 set( component "${project_component_fullname}-Runtime" )
 if (component IN_LIST CPACK_COMPONENTS_ALL)
     string( TOUPPER ${component} COMP )
