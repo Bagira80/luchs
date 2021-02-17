@@ -229,6 +229,11 @@ function(load_common_zlib GLOBAL REQUIRED)
             endif()
             if (GLOBAL)
                 set_target_properties( ZLib::ZLib PROPERTIES IMPORTED_GLOBAL TRUE )
+                find_and_store_associated_runtime_debian_package(
+                    TARGETS ZLib::ZLib
+                    GROUP_NAME ZLib
+                    TIMEOUT 10
+                )
             endif()
         endif()
         # Cleanup cache.
