@@ -136,6 +136,11 @@ function(load_common_avro GLOBAL REQUIRED)
             )
             if (GLOBAL)
                 set_target_properties( Avro::shared PROPERTIES IMPORTED_GLOBAL TRUE )
+                find_and_store_associated_runtime_debian_package(
+                    TARGETS Avro::shared
+                    GROUP_NAME Avro
+                    TIMEOUT 10
+                )
             endif()
         endif()
         # Cleanup cache.
