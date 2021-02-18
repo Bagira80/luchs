@@ -5,6 +5,8 @@
 
 include_guard()
 
+include( "${CMAKE_CURRENT_LIST_DIR}/find_and_store_associated_runtime_debian_package.cmake" )
+
 
 ##
 # @name load_common_dependency( dependency_name )
@@ -168,6 +170,13 @@ function(load_common_threads GLOBAL REQUIRED)
         if (TARGET Threads::Threads)
             if (GLOBAL)
                 set_target_properties( Threads::Threads PROPERTIES IMPORTED_GLOBAL TRUE )
+                # Note: Possibly, the following is not required because instead of a package we
+                #       are preferably using the compiler/linker flag -pthread instead.
+                find_and_store_associated_runtime_debian_package(
+                    TARGETS Threads::Threads
+                    GROUP_NAME Threads
+                    TIMEOUT 10
+                )
             endif()
         endif()
     endif()
