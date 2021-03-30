@@ -2,6 +2,19 @@
 include( ${CMAKE_CURRENT_LIST_DIR}/@project_output_fullname@-Runtime.cmake )
 include( ${CMAKE_CURRENT_LIST_DIR}/@project_output_fullname@-Development.cmake OPTIONAL )
 
+# Always make newly imported targets globally visible!
+foreach( imported_target IN ITEMS @EXPORTED_TARGETS@ )
+    if (NOT TARGET ${imported_target})
+        continue()
+    endif()
+    get_target_property( is_imported ${imported_target} IMPORTED )
+    if (NOT is_imported)
+        message( WARNING "${imported_target} is expected to be an IMPORTED target, but somehow is a normal target!?" )
+        continue()
+    endif()
+    set_target_properties( ${imported_target} PROPERTIES IMPORTED_GLOBAL TRUE )
+endforeach()
+
 # Determine if the newly imported targets have dependencies
 # which are common and can automatically be found, too.
 include( load-common-dependencies OPTIONAL RESULT_VARIABLE PATH_TO_load-common-dependencies )
