@@ -198,6 +198,10 @@ function( enable_separate_debug_symbols only_after_linking )
     else ()
         set( only_after_linking "0" )
     endif()
+
+    # WARNING: Due to current bugs in "dwp" we currently can only split after linking, not earlier!
+    set( only_after_linking "1" )
+
     # Enable splitting debugging information into separate .dwo files.
     # Note: This does not work if LTO is enabled.
     if (NOT only_after_linking)
