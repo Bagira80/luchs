@@ -237,7 +237,10 @@ endfunction()
 #
 function( enable_embedding_more_debugging_info )
     # Enable more detailed debugging information (optimized for usage with GDB / LLDB).
-    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gdwarf-5>
+    # Note: Although I would prefer the Dwarf 5 format, we have to use the Dwarf 4 format!
+    #       Especially, because generating a proper GDB-index section will not succeed (with LLD linker)
+    #       when using the Dwarf 5 format.
+    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gdwarf-4>
                          $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Debug,RelWithDebInfo>>:-fvar-tracking-assignments>
                          $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-g3>
                          $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-ggdb3> )
@@ -246,8 +249,8 @@ function( enable_embedding_more_debugging_info )
     add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gz=zlib> )  # Implies the following linker-option.
     #add_link_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:LINKER:--compress-debug-sections=zlib> )
     # Enable building a GDB index.
-    # Note: This requires a modern linker, like the Gold-linker!
-    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-ggnu-pubnames> )
+    # Note: This requires a modern linker, like the Gold or LLD linker!
+    add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-ggnu-pubnames> )  # Required for generating a proper GDB-index.
     add_link_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:LINKER:--gdb-index> )
     # Enable some further optimizations for handling debugging symbols.
     add_compile_options( $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-fdebug-types-section> )
