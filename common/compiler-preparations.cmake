@@ -61,6 +61,18 @@ endfunction()
 
 
 ##
+# @name set_required_build_settings_for_GCC8()
+# @brief Sets some required compiler/link settings for GCC8
+# @note These help working around problems with that specific compiler!
+#
+function( set_required_build_settings_for_GCC8 )
+    # Always link with libstdc++fs.a when using GCC 8.
+    # Note: This command makes sure that this option comes pretty late on the cmdline.
+    link_libraries( "$<GENEX_EVAL:$<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:-lstdc++fs>>" )
+endfunction()
+
+
+##
 # @name set_minimum_required_cxx_standard()
 # @brief Sets the minimal required C++ standard (and disables extensions).
 #

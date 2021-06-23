@@ -61,6 +61,7 @@ store_compiler_tag( "ORGANIZATION_COMPILER_TAG" )
 # Load and make some compiler-preparations.
 include( "${CMAKE_CURRENT_LIST_DIR}/compiler-preparations.cmake" )
 set_required_build_settings()
+set_required_build_settings_for_GCC8()
 set_minimum_required_cxx_standard()
 set_default_visibility_to_hidden()
 set_default_library_postfixes()
