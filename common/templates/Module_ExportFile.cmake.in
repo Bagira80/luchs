@@ -31,6 +31,11 @@ if (PATH_TO_load-common-dependencies)
                 if (TARGET ${dependency})
                     continue()
                 endif()
+                # Skip generator-expressions.
+                if (dependency MATCHES "^[$][<].+[>]")
+                    message( DEBUG "Skip searching for following indirect dependency of package `${CMAKE_FIND_PACKAGE_NAME}`: ${dependency}" )
+                    continue()
+                endif()
                 # Skip ORGANIZATION dependencies.
                 if (dependency MATCHES "^Organization::.+")
                     message( DEBUG "Skip searching for following indirect dependency of package `${CMAKE_FIND_PACKAGE_NAME}`: ${dependency}" )
