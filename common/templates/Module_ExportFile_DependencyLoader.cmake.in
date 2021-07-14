@@ -1,0 +1,39 @@
+# As this script will probably be loaded automatically from the
+# package configuration file during a `find_package` call, we
+# must make sure to not accidentially override the _IMPORT_PREFIX
+# variable.
+# Therefore we are storing a backup of it here and have to properly
+# reset it to its original value and the end of this script!
+set( Backup_of_IMPORT_PREFIX_in_${CMAKE_CURRENT_LIST_FILE} "${_IMPORT_PREFIX}" )
+
+# Determine if the newly imported targets have dependencies
+# which are specific ORGANIZATION dependencies and can automatically
+# be found.
+foreach( imported_target IN ITEMS @EXPORTED_TARGETS@ )
+    if (NOT TARGET ${imported_target})
+        continue()
+    endif()
+    # Check list of dependencies for "Organization::*" dependency targets.
+    get_target_property( dependencies_list ${imported_target} INTERFACE_LINK_LIBRARIES )
+    if (dependencies_list)
+        foreach( dependency IN LISTS dependencies_list )
+            # Only check dependencies which have the correct namespace.
+            if (dependency MATCHES "^Organization::.+")
+                # Skip already known targets.
+                if (TARGET ${dependency})
+                    continue()
+                endif()
+                # Determine component and try to find and load it.
+                string( REGEX REPLACE "^Organization::" "" component "${dependency}" )
+                find_package( Organization QUIET OPTIONAL_COMPONENTS ${component} CONFIG PATHS ${CMAKE_CURRENT_LIST_DIR} )
+                if (NOT TARGET ${dependency})
+                    message( DEBUG "Cannot find the following dependency of imported target `${imported_targets}`: ${dependency}" )
+                endif()
+            endif()
+        endforeach()
+    endif()
+endforeach()
+
+# Reset _IMPORT_PREFIX to the backed up value.
+set( _IMPORT_PREFIX "${Backup_of_IMPORT_PREFIX_in_${CMAKE_CURRENT_LIST_FILE}}" )
+unset( Backup_of_IMPORT_PREFIX_in_${CMAKE_CURRENT_LIST_FILE} )
