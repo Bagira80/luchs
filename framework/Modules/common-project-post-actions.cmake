@@ -10,6 +10,7 @@
 #            * by retrieving the current Git revision and providing it as version variable, and
 #            * by retrieving the current build number from the environment and providing it as
 #              version variable.
+#          * It generates extra project information variables for the currently processed project.
 #
 
 
@@ -45,3 +46,25 @@ else()
     set( PROJECT_VERSION_BUILD_NUM "0" )
     set( ${PROJECT_NAME}_VERSION_BUILD_NUM "0" )
 endif()
+
+
+# Generate additional project information variables.
+include( make_extra_project_variables )
+make_extra_project_variables( "${PROJECT_NAME}" )
+set( group_package_dirname "${COMPANY_GROUP_PACKAGE_NAME}" )
+message( DEBUG "--- ${project_namespace} ---\n"
+               "project_c_identifier               = ${project_c_identifier}\n"
+               "project_output_fullname            = ${project_output_fullname}\n"
+               "project_folder_fullname            = ${project_folder_fullname}\n"
+               "project_package_fullname           = ${project_package_fullname}\n"
+               "project_component_prefix_fullname  = ${project_component_prefix_fullname}\n"
+               "project_export_fullname            = ${project_export_fullname}\n"
+               "project_package_namespace          = ${project_package_namespace}\n"
+               "project_component_prefix_namespace = ${project_component_prefix_namespace}\n"
+               "project_export_namespace           = ${project_export_namespace}\n"
+               "project_package_name               = ${project_package_name}\n"
+               "project_component_prefix_name      = ${project_component_prefix_name}\n"
+               "project_export_name                = ${project_export_name}\n"
+               "project_export_parent_name         = ${project_export_parent_name}\n"
+               "group_package_dirname              = ${group_package_dirname}"
+)
