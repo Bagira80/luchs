@@ -1,0 +1,61 @@
+/**
+ * @file
+ * @brief Contains configured options and settings for ${PROJECT_NAME}.
+ * @note This source-file is auto-generated. Do not edit it directly!
+ */
+
+
+// Note: Whether we build a static or shared library, we always want to be able
+//       to export the symbols for the functions from this TU from the finally
+//       linked shared library or executable.
+#undef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_IS_STATIC_LIB
+#ifndef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS
+#   define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS  1
+#endif
+#include "${project_folder_fullname}/module_info/BuildInfo.hpp"
+#include "version.h"  // Should be in the same directory as the current source file.
+
+// Helper macros for stringifying pre-processor tokens.
+#define MAKE_INNER_STRING(...) # __VA_ARGS__
+#define MAKE_STRING(...)       MAKE_INNER_STRING(__VA_ARGS__)
+
+// Convenience defines.
+#ifdef OFFICIAL_RELEASE_BUILD
+#   define IS_OFFICIAL_RELEASE true
+#else
+#   define IS_OFFICIAL_RELEASE false
+#endif
+#ifdef CUSTOMIZED_BUILD
+#   define IS_CUSTOMIZED_BUILD true
+#   define CUSTOMER_NAME MAKE_STRING(CUSTOMIZED_BUILD)
+#else
+#   define IS_CUSTOMIZED_BUILD false
+#   define CUSTOMER_NAME ""
+#endif
+
+
+namespace ${project_namespace}::module_info
+{
+
+namespace /* anonymous */
+{
+    const char *const  BUILD_OPTIONS[]
+    {
+        ${${PROJECT_NAME}_BUILD_OPTIONS_STRING}  nullptr
+    };
+}
+
+const char*          module_name()         { return MAKE_STRING(MODULE_NAME); }
+bool                 is_official_release() { return IS_OFFICIAL_RELEASE; }
+bool                 is_customized_build() { return IS_CUSTOMIZED_BUILD; }
+unsigned int         version_major()       { return VERSION_MAJOR; }
+unsigned int         version_minor()       { return VERSION_MINOR; }
+unsigned int         version_patch()       { return VERSION_PATCH; }
+unsigned int         version_build_num()   { return VERSION_BUILD_NUM; }
+const char*          version_full()        { return MAKE_STRING(VERSION_MAJOR.VERSION_MINOR.VERSION_PATCH.VERSION_BUILD_NUM); }
+const char*          version_revision()    { return MAKE_STRING(VERSION_REVISION); }
+const char*          customer_name()       { return CUSTOMER_NAME; }
+const char*          build_configuration() { return MAKE_STRING($<CONFIG>); }
+const char* const *  build_options()       { return BUILD_OPTIONS; }
+
+}  // END: namespace ${project_namespace}::module_info

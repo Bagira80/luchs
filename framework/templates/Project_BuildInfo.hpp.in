@@ -1,0 +1,32 @@
+/**
+ * @file
+ * @brief Contains configured options and settings for ${PROJECT_NAME}.
+ * @note This header-file is auto-generated. Do not edit it directly!
+ */
+
+#pragma once
+
+#include "${project_folder_fullname}/ExportMacros.h"
+
+
+namespace ${project_namespace}::module_info
+{
+
+#define PUBLIC_API $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API
+
+PUBLIC_API extern const char*          module_name();
+PUBLIC_API extern bool                 is_official_release();
+PUBLIC_API extern bool                 is_customized_build();
+PUBLIC_API extern unsigned int         version_major();
+PUBLIC_API extern unsigned int         version_minor();
+PUBLIC_API extern unsigned int         version_patch();
+PUBLIC_API extern unsigned int         version_build_num();
+PUBLIC_API extern const char*          version_full();
+PUBLIC_API extern const char*          version_revision();
+PUBLIC_API extern const char*          customer_name();
+PUBLIC_API extern const char*          build_type();
+PUBLIC_API extern const char* const *  build_options();
+
+#undef PUBLIC_API
+
+}  // END: namespace ${project_namespace}::module_info
