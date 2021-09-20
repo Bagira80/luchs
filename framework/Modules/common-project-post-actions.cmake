@@ -83,3 +83,9 @@ generate_extra_project_sources()
 if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
     generate_extra_project_msbuild_property_file()
 endif()
+
+
+# Settings only for top-level CMakeLists.txt file.
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    include( "${CMAKE_CURRENT_LIST_DIR}/top-level-project-settings.cmake" )
+endif()
