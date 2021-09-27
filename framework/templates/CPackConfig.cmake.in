@@ -1,0 +1,48 @@
+# Automatically generated
+#
+# If CPack is triggered with this CPack-configuration file by building target 'package' variable
+# CPACK_GENERATOR will not be set. This results in all enabled CPack generators to get used.
+# However, this CPack-configuration shall only trigger packaging with all other (project-specific)
+# CPack-configurations and therefore only a "dummy" package is directly generated (using the
+# "External" CPack-generator) from this CPack-configuration. All other packages will be generated
+# by the other triggered CPack-configurations.
+
+
+# Dummy generator settings.
+set( CPACK_GENERATOR                    "External" )
+set( CPACK_PACKAGE_DIRECTORY            "@CMAKE_BINARY_DIR@/packages" )  # Subdirectory "packages" in top-most build-directory.
+set( CPACK_PACKAGE_FILE_NAME            "ignore-me" )
+set( CPACK_PACKAGE_NAME                 "@PROJECT_NAME@" )
+set( CPACK_PACKAGE_VERSION              "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@" )
+set( CPACK_PACKAGE_DESCRIPTION          "@PROJECT_DESCRIPTION@" )
+set( CPACK_INSTALL_COMMANDS             "${CMAKE_COMMAND} -E echo Done!" )
+
+
+# ----------------------------------------------------------------------
+# Here we do the real work!
+# ----------------------------------------------------------------------
+
+# Find all actual CPack configuration files in subdirectories.
+file( GLOB_RECURSE config_file_for_cpack
+    "CPackConfig*.cmake"
+)
+# Skip the ones which are not located in a directory "packaging".
+list( FILTER config_file_for_cpack INCLUDE REGEX "^.*/packaging/CPackConfig[^/]*[.]cmake$" )
+
+# Honor the current build-configuration.
+# Note: Packaging build-artifacts for multiple build-configurations is not supported!
+if (CPACK_BUILD_CONFIG)
+    set( build_config_option "-C;${CPACK_BUILD_CONFIG}" )
+endif()
+
+# Run CPack on each individual CPack configuration from subdirectories.
+foreach( config_file IN LISTS config_file_for_cpack )
+    execute_process(
+        COMMAND "${CMAKE_CPACK_COMMAND}" "--config" "${config_file}" ${build_config_option}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
+        RESULT_VARIABLE result
+    )
+    if (result)
+        message( SEND_ERROR "An error occurred while processing: ${config_file}" )
+    endif()
+endforeach()
