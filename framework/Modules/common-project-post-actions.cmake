@@ -11,6 +11,7 @@
 #            * by retrieving the current build number from the environment and providing it as
 #              version variable.
 #          * It generates extra project information variables for the currently processed project.
+#          * It sets the default name for "folders" in IDEs for the currently processed project.
 #
 
 
@@ -68,3 +69,7 @@ message( DEBUG "--- ${project_namespace} ---\n"
                "project_export_parent_name         = ${project_export_parent_name}\n"
                "group_package_dirname              = ${group_package_dirname}"
 )
+
+
+# Initial value for the FOLDER property of targets created by the current project.
+set( CMAKE_FOLDER "${project_folder_fullname}" )
