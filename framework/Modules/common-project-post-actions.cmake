@@ -96,3 +96,9 @@ endif()
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     include( "${CMAKE_CURRENT_LIST_DIR}/top-level-project-settings.cmake" )
 endif()
+
+
+# Load functions that are probably needed when creating/installing targets for the the current project.
+include( add_project_targets )
+include( add_source_group )
+include( install_project_targets )
