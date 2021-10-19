@@ -1,0 +1,24 @@
+diff --git a/googletest/src/gtest.cc b/googletest/src/gtest.cc
+index 30a5cc3f..450523c8 100644
+--- a/googletest/src/gtest.cc
++++ b/googletest/src/gtest.cc
+@@ -2601,12 +2601,19 @@ template <class T, typename Result>
+ Result HandleSehExceptionsInMethodIfSupported(T* object, Result (T::*method)(),
+                                               const char* location) {
+ #if GTEST_HAS_SEH
++#ifdef __clang__
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Wlanguage-extension-token"
++#endif
+   __try {
+     return (object->*method)();
+   } __except (internal::UnitTestOptions::GTestProcessSEH(  // NOLINT
+       GetExceptionCode(), location)) {
+     return static_cast<Result>(0);
+   }
++#ifdef __clang__
++#pragma clang diagnostic pop
++#endif
+ #else
+   (void)location;
+   return (object->*method)();
