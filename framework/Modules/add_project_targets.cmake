@@ -1,8 +1,8 @@
 ##
 # @file
-# @details Defines functions which create new library/executable targets for projects
+# @details Defines functions which create new library/executable/test targets for projects
 #          and make some additional settings on these targets.
-# @note They are extended versions of the `add_library` and `add_executable` commands.
+# @note They are extended versions of the `add_library`, `add_executable` and `add_test` commands.
 #
 
 include_guard()
@@ -118,4 +118,56 @@ function( add_project_executable name )
 
     # Make common settings on that target.
     luchs_internal__add_project_targets__common_setting( ${CMAKE_CURRENT_FUNCTION} ${name} ${target_name_with_namespace} )
+endfunction()
+
+
+##
+# @name add_project_test( name [DISPLAYED_TEST_ID] )
+# @brief Creates a new test target with the given name and some default settings.
+# @details Creates a new test target with the given name and an alias for that executable target.
+#          If the name equals `${PROJECT_NAME}` the alias will be `${project_export_fullname}`. If
+#          the name instead equals `${PROJECT_NAME}-<basename>` the alias will be
+#          `${project_export_fullname}::<basename>`.  
+#          Additionally it sets some include search-paths for that target and sets its
+#          `PROJECT_LABEL` property to a sensible value.
+# @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
+# @param DISPLAYED_TEST_ID The additional identifier which will be displayed when running the
+#        test. (It is helpful for grouping.) If not given it defaults to the number `1´.
+# @note The variables `PROJECT_NAME`, `project_export_fullname`, `PROJECT_SOURCE_DIR` and
+#       `PROJECT_BINARY_DIR` need to be defined!
+# @note Therefore the `project` command and its pre-action should have been called before.
+#
+function( add_project_test name )
+    cmake_parse_arguments(
+         "_luchs"
+         ""
+         "DISPLAYED_TEST_ID"
+         ""
+         ${ARGN}
+    )
+    # Some sanity checks.
+    luchs_internal__add_project_targets__sanity_checks( ${CMAKE_CURRENT_FUNCTION} ${name} )
+
+    # Check if option DISPLAYED_TEST_ID was given without any value.
+    if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Given option 'DISPLAYED_TEST_ID' is missing its value!" )
+    endif()
+
+    # Set default value for DISPLAYED_TEST_ID option?
+    if (NOT DEFINED _luchs_DISPLAYED_TEST_ID OR "${_luchs_DISPLAYED_TEST_ID}" STREQUAL "")
+        set( _luchs_DISPLAYED_TEST_ID "1" )
+    endif()
+
+    # Create test target.
+    add_executable( ${name} )
+    add_executable( ${target_name_with_namespace} ALIAS ${name} )
+
+    # Make common settings on that target.
+    luchs_internal__add_project_targets__common_setting( ${CMAKE_CURRENT_FUNCTION} ${name} ${target_name_with_namespace} )
+
+    # Register the test target as new test.
+    add_test( NAME "${project_export_fullname}::test_${_luchs_DISPLAYED_TEST_ID}{ ${name} }"
+        COMMAND ${name}
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:${name}>"
+    )
 endfunction()
