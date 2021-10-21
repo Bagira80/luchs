@@ -82,7 +82,11 @@ endfunction()
 #          `PROJECT_LABEL` property to a sensible value.  
 #          Depending on the value of `ENABLE_SEPARATE_DEBUGSYMBOLS` the target might be
 #          instructed to split debug information into a separate file. (Only applies to `SHARED`,
-#          `STATIC` or `MODULE` targets.)
+#          `STATIC` or `MODULE` targets.)  
+#          If the following files exist, these will be assumed to contain the list of private and
+#          public source files which then will be read and added to the target as well.
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_public.cmake`
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param type The type of target. Must be either not given (in which case the `BUILD_SHARED_LIBS`
 #        variable determines its type) or one of: `SHARED`, `STATIC`, `MODULE`, `OBJECT` or
@@ -152,7 +156,11 @@ endfunction()
 #          Additionally it sets some include search-paths for that target and sets its
 #          `PROJECT_LABEL` property to a sensible value.  
 #          Depending on the value of `ENABLE_SEPARATE_DEBUGSYMBOLS` the target might be
-#          instructed to split debug information into a separate file.
+#          instructed to split debug information into a separate file.  
+#          If the following files exist, these will be assumed to contain the list of private and
+#          public source files which then will be read and added to the target as well.
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_public.cmake`
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param EXCLUDE_FROM_ALL Determines if the target should be built by default.
 # @note The variables `PROJECT_NAME`, `project_export_namespace`, `PROJECT_VERSION_MAJOR`,
@@ -198,7 +206,11 @@ endfunction()
 #          `PROJECT_LABEL` property to a sensible value and potentially declares a dependency on
 #          some test-framework (e.g. GoogleTest).  
 #          Depending on the value of `ENABLE_SEPARATE_DEBUGSYMBOLS` the target might be
-#          instructed to split debug information into a separate file.
+#          instructed to split debug information into a separate file.  
+#          If the following files exist, these will be assumed to contain the list of private and
+#          public source files which then will be read and added to the target as well.
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_public.cmake`
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param NO_SEPARATE_TEST_RUNS Determines that individual tests of that target shall not be run
 #        individually by CTest, but the entire test-executable with all tests should be run as a

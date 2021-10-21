@@ -66,6 +66,16 @@ function( luchs_internal__add_project_targets__common_setting caller target alia
         SOVERSION ${PROJECT_VERSION_MAJOR}
     )
 
+    # Load the list of private/public source files of the target.
+    load_project_sources( ${target} )
+    # Add the list of source-files to the target.
+    # Note: "Public" sources will still only be added as private build-sources!
+    #       We assume that no other target which later depends on `target` wants to compile the
+    #       public sources again and therefore does not need to inherit these. Instead, it should
+    #       inherit the include search path of `target`. (But that is not handled here.)
+    target_sources( ${target}
+        PRIVATE ${private_sources} ${public_sources}
+    )
     # Add default (public) include search paths.
     target_include_directories( ${target}
         PUBLIC
