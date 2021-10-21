@@ -3,6 +3,8 @@
 # @brief Defines helper functions for the functions from the `add_project_targets` CMake module.
 #
 
+include( "${CMAKE_CURRENT_LIST_DIR}/../add_source_group.cmake" )
+
 
 ##
 # @name luchs_internal__add_project_targets__sanity_checks( caller name )
@@ -120,6 +122,18 @@ function( luchs_internal__add_project_targets__common_setting caller target alia
                 RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests"
             )
         endif()
+        # Group the sources in the IDE.
+        string( REGEX REPLACE "(.)" "[\\1]" project_source_dir "${PROJECT_SOURCE_DIR}" )  # Regex representing PROJECT_SOURCE_DIR exactly!
+        add_source_group( FLAT_GROUP GROUP "Private Test Sources"
+            INCLUDE_FILTER "^tests/|^${project_source_dir}/tests/"
+            STRIP_PREFIXES "tests/" "${PROJECT_SOURCE_DIR}/tests/"
+            SOURCES "${private_sources}"
+        )
+        add_source_group( FLAT_GROUP GROUP "Public Test Sources"
+            INCLUDE_FILTER "^include/|^${project_source_dir}/include/"
+            STRIP_PREFIXES "include/" "${PROJECT_SOURCE_DIR}/include/"
+            SOURCES "${public_sources}"
+        )
     else()
         # Add default (private) include search paths.
         target_include_directories( ${target}
@@ -128,6 +142,18 @@ function( luchs_internal__add_project_targets__common_setting caller target alia
                 ${CMAKE_CURRENT_BINARY_DIR}/src
                 ${PROJECT_SOURCE_DIR}/src
                 ${PROJECT_BINARY_DIR}/src
+        )
+        # Group the sources in the IDE.
+        string( REGEX REPLACE "(.)" "[\\1]" project_source_dir "${PROJECT_SOURCE_DIR}" )  # Regex representing PROJECT_SOURCE_DIR exactly!
+        add_source_group( FLAT_GROUP GROUP "Private Sources"
+            INCLUDE_FILTER "^src/|^${project_source_dir}/src/"
+            STRIP_PREFIXES "src/" "${PROJECT_SOURCE_DIR}/src/"
+            SOURCES "${private_sources}"
+        )
+        add_source_group( FLAT_GROUP GROUP "Public Sources"
+            INCLUDE_FILTER "^include/|^${project_source_dir}/include/"
+            STRIP_PREFIXES "include/" "${PROJECT_SOURCE_DIR}/include/"
+            SOURCES "${public_sources}"
         )
     endif()
 
