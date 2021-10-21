@@ -76,6 +76,13 @@ message( DEBUG "--- ${project_namespace} ---\n"
 set( CMAKE_FOLDER "${project_folder_fullname}" )
 
 
+# By default, assume that all header files are inherited by a dependency target and group them
+# for IDEs accordingly.
+# Note: Header files, which are explicitly added as (direct) sources to a target, should be put
+#       into another group! (This will be done automatically by the `add_project_*` commands.)
+source_group( "Inherited Headers" REGULAR_EXPRESSION "^.+\.(hpp|h|hxx|hh|H)$" )
+
+
 # Generate some extra project header / source / resource files.
 include( generate_extra_project_files )
 generate_extra_project_sources()
