@@ -1,13 +1,74 @@
 ##
 # @file
 # @details Defines functions which create new library/executable/test targets for projects
-#          and make some additional settings on these targets.
-# @note They are extended versions of the `add_library`, `add_executable` and `add_test` commands.
+#          and make some additional settings on these targets.  
+#          Also defines a function for loading source lists from files at some common location
+#          and adding these sources to a target.
+# @note These functions are extended versions of the `add_library`, `add_executable` and `add_test`
+#       commands and a function similar to the `target_sources` commands.
 #
 
 include_guard()
 
 include( "internal/add_project_targets_helper" )
+
+
+##
+# @name load_project_sources( target )
+# @brief Loads the lists of sources for the target with the given name and returns them.
+# @details If the following files exist, these will be assumed to contain the list of private and
+#          public source files which then will be read and returned to caller's scope:
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_public.cmake`
+# @param target The name of the target. It should have the form `${PROJECT_NAME}-<basename>`.
+#        If it has another form, the entire name is assumed to be the basename.
+# @note The parsed sources will be returned in variables `private_sources` and `public_sources`.
+# @note The variables `PROJECT_NAME` and `PROJECT_SOURCE_DIR` need to be defined!
+# @note Therefore the `project` command and its pre-action should have been called before.
+# @note The files which contain the list of source files should contain a big CMake block comment
+#       which encloses the list of source files, where every source file is written on a single
+#       line.
+#
+function( load_project_sources target )
+    # Calculate basename.
+    if ("${target}" MATCHES "${PROJECT_NAME}-(.+)")
+        set( basename "${CMAKE_MATCH_1}" )
+    else()
+        set( basename "${target}" )
+    endif()
+
+    # Load the list of private source files.
+    # Note: In order to re-trigger CMake if the list of files changes, we have to use the 'include'
+    #       command to load the file containing it. However, that file should not need to contain
+    #       CMake commands! Therefore, its content must be a simple list of file-paths entirely
+    #       surrounded by a CMake block comment. Because of that, CMake will ignore the content
+    #       (but still retrigger if its content changes).
+    #       Now, in order to still parse the content, we have to use the `file(STRINGS)` command.
+    #       If the resulting string contains CMake variables we additionally must re-evaluate them.
+    set(private_sources "")
+    include( "${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_private.cmake"
+        OPTIONAL RESULT_VARIABLE source_file )
+    if (source_file)
+        file( STRINGS "${source_file}" private_sources REGEX "^[ \t]*[^#]+$" )
+        list( TRANSFORM private_sources STRIP )
+        cmake_language( EVAL CODE "set( private_sources \"${private_sources}\" )" )
+    endif()
+
+    # Load the list of public source files.
+    # Note: The same note from above applies here as well!
+    set(public_sources "")
+    include( "${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_public.cmake"
+        OPTIONAL RESULT_VARIABLE source_file )
+    if (source_file)
+        file( STRINGS "${source_file}" public_sources REGEX "^[ \t]*[^#]+$" )
+        list( TRANSFORM public_sources STRIP )
+        cmake_language( EVAL CODE "set( public_sources \"${public_sources}\" )" )
+    endif()
+
+    # Make the lists of sources available in parent-scope.
+    set( private_sources "${private_sources}" PARENT_SCOPE )
+    set( public_sources  "${public_sources}" PARENT_SCOPE )
+endfunction()
 
 
 ##
