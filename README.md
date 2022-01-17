@@ -16,6 +16,17 @@ which should simplify and generalize using CMake.
 It should be used by larger CMake based projects to conveniently and uniformly build them.
 
 
+## Manual
+
+* [Getting started](docs/01_getting_started.md)
+* [Installing build-artifacts](docs/02_installing.md)
+* [Packaging build-artifacts](docs/03_packaging.md)
+* [Environment variables](docs/04_env-variables.md)
+* [Configuration options](docs/05_options.md)
+* [Customizing _luchs_](docs/06_customization.md)
+
+
+
 ## Origin
 
 The foundation of the _luchs_ CMake support framework was originally developed by
