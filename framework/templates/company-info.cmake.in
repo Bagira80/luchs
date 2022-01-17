@@ -1,0 +1,22 @@
+##
+# @file
+# @note This (CMake-)settings-file is auto-generated. Do not edit it directly!
+# @note This file should (automatically) be included before calling the `project` command in the
+#       top-level CMakeLists.txt file. (This is automatically taken care of by the
+#       `common-project-pre-actions.cmake` script.)
+#
+# @brief Contains company-specific information.
+#
+
+
+## General information about the company.
+##
+
+set( COMPANY_ID                   "company" )
+set( COMPANY_NAME                 "The Company" )
+set( COMPANY_FOUNDING_YEAR        "2022" )
+set( COMPANY_WEBSITE              "https://example.com" )
+set( COMPANY_EMAIL                "info@example.com" )
+set( COMPANY_SUPPORT_EMAIL        "info@example.com" )
+set( COMPANY_SUPPORT_NAME         "Company Support Team" )
+set( COMPANY_GROUP_PACKAGE_NAME   "company" )
