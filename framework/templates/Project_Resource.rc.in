@@ -1,0 +1,73 @@
+/**
+ * @file
+ * @brief Resource file for ${PROJECT_NAME}.
+ * @note This source-file is auto-generated. Do not edit it directly!
+ */
+
+#ifdef RC_INVOKED
+
+#include <winnt.rh>
+#include <winver.h>
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(65001) // UTF-8
+
+// Note: All includes should be located in the same directory as the current resource file.
+#include "${project_folder_fullname}/module_info/version.h"
+#include "resource-info_$<CONFIG>.h"
+
+
+#define MAKE_STRING(...)  MAKE_WIDESTRING(__VA_ARGS__)
+
+
+VS_VERSION_INFO VERSIONINFO
+    FILEVERSION     CREATE_XVER(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_BUILD_NUM)
+    PRODUCTVERSION  CREATE_XVER(PRODUCT_VERSION_MAJOR, PRODUCT_VERSION_MINOR, PRODUCT_VERSION_PATCH, PRODUCT_VERSION_BUILD_NUM)
+    FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+    FILEFLAGS       ACTUAL_FILEFLAGS
+    FILEOS          VOS_NT
+    FILETYPE        ACTUAL_FILETYPE
+    FILESUBTYPE     VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"  // UNICODE code-page
+        BEGIN
+#ifdef TEXT_AUTHOR
+            VALUE "Author",           MAKE_STRING(TEXT_AUTHOR)
+#endif
+#ifdef TEXT_COMMENTS
+            VALUE "Comments",         MAKE_STRING(TEXT_COMMENTS)
+#endif
+            VALUE "CompanyName",      MAKE_STRING(TEXT_COMPANY)
+            VALUE "FileDescription",  MAKE_STRING(TEXT_FILEDESC)
+            VALUE "FileVersion",      MAKE_STRING(CREATE_FVER(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_BUILD_NUM))
+            VALUE "InternalName",     MAKE_STRING(TEXT_INTERNAL_NAME)
+            VALUE "LegalCopyright",   MAKE_STRING(TEXT_COPYRIGHT)
+#ifdef TEXT_TRADEMARK
+            VALUE "LegalTrademark",   MAKE_STRING(TEXT_TRADEMARK)
+#endif
+            VALUE "OriginalFilename", MAKE_STRING(TEXT_ORIG_FILENAME)
+            VALUE "ProductName",      MAKE_STRING(TEXT_PRODUCT_NAME)
+            VALUE "ProductVersion",   MAKE_STRING(CREATE_PVER(PRODUCT_VERSION_MAJOR, PRODUCT_VERSION_MINOR, PRODUCT_VERSION_PATCH, PRODUCT_VERSION_BUILD_NUM))
+#ifdef TEXT_PRIVATEBUILD
+            VALUE "PrivateBuild",     MAKE_STRING(TEXT_PRIVATEBUILD)
+#endif
+#ifdef TEXT_SPECIALBUILD
+            VALUE "SpecialBuild",     MAKE_STRING(TEXT_SPECIALBUILD)
+#endif
+#ifdef TEXT_WEBSITE_STR
+            VALUE "Website",          TEXT_WEBSITE_STR
+#endif
+#ifdef VERSION_REVISION
+            VALUE "Git revision",     MAKE_STRING(VERSION_REVISION)
+#endif
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200   // MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), Unicode (== 0x04b0)
+    END
+END
+
+#endif // RC_INVOKED

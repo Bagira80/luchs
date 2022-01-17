@@ -1,0 +1,116 @@
+/**
+ * @file
+ * @brief Defines macros with information to be used in resource scripts of ${PROJECT_NAME}.
+ * @note This (resource-)header-file is auto-generated. Do not edit it directly!
+ * @details This (resource-)header contains information for the resource-compiler and should
+ *          always be included from resource (*.rc) files!
+ *
+ *          Additionally, it also contains some helper macros to stringify tokens and to create
+ *          version strings.
+ */
+
+
+//
+// Macros to make an ANSI-string from tokens (or even other macros).
+//
+
+#define MAKE_ANSISTRING(...)  #__VA_ARGS__
+#define ANSISTRING(...)       MAKE_ANSISTRING(__VA_ARGS__)
+
+
+//
+// Macros to make a (wide) Unicode-string from tokens (or even other macros).
+//
+
+#define MAKE_WIDESTRING(...)  L#__VA_ARGS__
+#define WIDESTRING(...)       MAKE_WIDESTRING(__VA_ARGS__)
+
+
+//
+// Macros to combine version components into a full version.
+//
+
+#define CREATE_XVER(maj,min,patch,build)  maj,min,patch,build
+#define CREATE_FVER(maj,min,patch,build)  maj.min.patch.build
+#define CREATE_PVER(maj,min,patch,build)  maj.min.patch
+
+
+//
+// Automatically determine values needed for VERSIONINFO.FILEFLAGS section.
+//
+
+// `OFFICIAL_RELEASE_BUILD` must be defined on official
+// build-machines (e.g. the Jenkins CI-servers).
+#if ! defined(OFFICIAL_RELEASE_BUILD)
+#   define FILEFLAGS_PRIVATEBUILD  VS_FF_PRIVATEBUILD
+#else
+#   define FILEFLAGS_PRIVATEBUILD  0L
+#endif
+
+// `CUSTOMIZED_BUILD` must be defined by the CMake build-system to the name
+// of the specific customer if a customized version is to be built!
+#if defined(CUSTOMIZED_BUILD)
+#   define FILEFLAGS_SPECIALBUILD  VS_FF_SPECIALBUILD
+#else
+#   define FILEFLAGS_SPECIALBUILD  0L
+#endif
+
+// `_DEBUG` should be defined when building the Debug configuration,
+// `NDEBUG` (normally) on all other configurations.
+// Note, however, that `NDEBUG` may be undefined, so that the `assert`
+// macro even might trigger an assertion in a Release build.
+#if defined(_DEBUG) || ! defined(NDEBUG)
+#   define FILEFLAGS_DEBUGBUILD  VS_FF_DEBUG
+#else
+#   define FILEFLAGS_DEBUGBUILD  0L
+#endif
+
+// The combined file-flags that actually shall be set.
+#define ACTUAL_FILEFLAGS  \
+    (FILEFLAGS_PRIVATEBUILD | FILEFLAGS_SPECIALBUILD | FILEFLAGS_DEBUGBUILD)
+
+
+//
+// Automatically determine values needed for VERSIONINFO.FILETYPE section.
+//
+
+#if defined($<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_IS_STATIC_LIB)
+#   define ACTUAL_FILETYPE  VFT_STATIC_LIB
+#elif defined($<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS)
+#   define ACTUAL_FILETYPE  VFT_DLL
+#else
+#   define ACTUAL_FILETYPE  VFT_APP
+#endif
+
+
+//
+// Other values for the StringFileInfo section.
+//
+
+#ifndef TEXT_COMMENTS
+$<$<BOOL:${EXTRA_COMMENTS}>:#   define TEXT_COMMENTS       ${EXTRA_COMMENTS}>
+#endif
+#define TEXT_COMPANY           ${COMPANY_NAME}
+#ifndef TEXT_FILEDESC
+#   define TEXT_FILEDESC       ${PROJECT_DESCRIPTION}
+#endif
+#ifndef TEXT_INTERNAL_NAME
+#   define TEXT_INTERNAL_NAME  ${PROJECT_NAME}
+#endif
+#define TEXT_COPYRIGHT         Copyright \xA9 ${COMPANY_FOUNDING_YEAR}-${THIS_YEAR}\x2C ${COMPANY_NAME}
+#define TEXT_TRADEMARK         All rights reservered to ${COMPANY_NAME}
+#ifndef TEXT_ORIG_FILENAME
+#   define TEXT_ORIG_FILENAME  $<$<BOOL:$<TARGET_NAME_IF_EXISTS:${PROJECT_NAME}>>:$<TARGET_FILE_NAME:${PROJECT_NAME}>>
+#endif
+#define TEXT_PRODUCT_NAME      ${PRODUCT_NAME}
+#if ! defined(OFFICIAL_RELEASE_BUILD)
+#   define TEXT_PRIVATEBUILD   Development version\x2C not for public distribution!
+#endif
+#if defined(CUSTOMIZED_BUILD)
+#   define TEXT_SPECIALBUILD   Customized for CUSTOMIZED_BUILD.
+#endif
+#ifdef _WIN32
+#   define TEXT_WEBSITE_STR    L"${COMPANY_WEBSITE}"
+#else
+#   define TEXT_WEBSITE_STR    "${COMPANY_WEBSITE}"
+#endif
