@@ -1,0 +1,106 @@
+/**
+ * @file
+ * @brief Contains export macros for ${PROJECT_NAME}.
+ * @note This header-file is auto-generated. Do not edit it directly!
+ * @details Defines two preprocessor macros that should be used to mark functions, classes, types
+ *          etc. as belonging to the public API of ${PROJECT_NAME} which shall be exported from
+ *          shared libraries (aka DLLs) or which do not belong to the public API and should
+ *          therefore not be exported.  
+ *          If a static library is built (which later shall not be compiled into a shared library)
+ *          the macro `$<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_IS_STATIC_LIB` should be
+ *          defined, which results in both export macros to effectively become a no-op.  
+ *          By default, this header is generated in such a way that this macro is automatically
+ *          defined or not defined, according to the type of the associated library.  
+ *          If instead a shared library is built and some symbols shall be exported from it then
+ *          one needs to define `$<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS` in
+ *          order to properly define the two export macros in such a way that symbols can be
+ *          exported if marked properly with these macros. This header takes care to use the
+ *          correct export/import mechanisms for the current compiler and platform.
+ */
+
+#ifndef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTMACROS_H_include_guard_was_processed
+#define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTMACROS_H_include_guard_was_processed
+
+
+/**
+ * @def $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API
+ * @brief Export-macro denoting public API functionality.
+ */
+
+/**
+ * @def $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL
+ * @brief Export-macro denoting private non-API functionality.
+ */
+
+/* The following macro needs to be defined if this library is built as static library! */
+$<IF:$<BOOL:${${project_c_identifier}_IS_STATIC_LIB}>,#define ,/* #undef >${project_c_identifier}_IS_STATIC_LIB$<$<NOT:$<BOOL:${${project_c_identifier}_IS_STATIC_LIB}>>: */>
+
+#ifdef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_IS_STATIC_LIB
+#   define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API
+#   define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL
+#else
+#   ifndef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API
+        /* Compiling with Cygwin on Windows? */
+#       if defined(__CYGWIN__)
+#           ifdef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __declspec(dllexport)  /* Note: GCC/Clang seem to also support this syntax. */
+#           else
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __declspec(dllimport)  /* Note: GCC/Clang seem to also support this syntax. */
+#           endif
+        /* Compiling with Clang/Clang-cl on Windows? */
+#       elif ((defined(_WIN32) || defined(_WIN64)) && defined(__clang__))
+#           ifdef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __declspec(dllexport)  /* Note: GCC/Clang seem to also support this syntax. */
+#           else
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __declspec(dllimport)  /* Note: GCC/Clang seem to also support this syntax. */
+#           endif
+        /* Compiling with MSVC on Windows? */
+#       elif ((defined(_WIN32) || defined(_WIN64)) && defined(_MSC_VER))
+#           ifdef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __declspec(dllexport)
+#           else
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __declspec(dllimport)
+#           endif
+        /* Compiling with Clang on Linux? */
+#       elif defined(__gnu_linux__) && defined(__clang__)
+#           ifdef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __attribute__((visibility("default")))
+#           else
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __attribute__((visibility("default")))
+#           endif
+        /* Compiling with GCC on Linux? */
+#       elif defined(__gnu_linux__) && defined(__GNUC__)
+#           ifdef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTS
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __attribute__((visibility("default")))
+#           else
+#               define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_API __attribute__((visibility("default")))
+#           endif
+        /* Compiling with an unknown OS/compiler combination? */
+#       else
+#           error "Unknown or unsupported OS/compiler combination!"
+#       endif
+#   endif
+#   ifndef $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL
+        /* Compiling with Cygwin on Windows? */
+#       if defined(__CYGWIN__)
+#           define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL
+        /* Compiling with Clang/Clang-cl on Windows? */
+#       elif ((defined(_WIN32) || defined(_WIN64)) && defined(__clang__))
+#           define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL
+        /* Compiling with MSVC on Windows? */
+#       elif ((defined(_WIN32) || defined(_WIN64)) && defined(_MSC_VER))
+#           define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL
+        /* Compiling with Clang on Linux? */
+#       elif defined(__gnu_linux__) && defined(__clang__)
+#           define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL __attribute__((visibility("hidden")))
+        /* Compiling with GCC on Linux? */
+#       elif defined(__gnu_linux__) && defined(__GNUC__)
+#           define $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_LOCAL __attribute__((visibility("hidden")))
+        /* Compiling with an unknown OS/compiler combination? */
+#       else
+#           error "Unknown or unsupported OS/compiler combination!"
+#       endif
+#   endif
+#endif
+
+#endif  /* $<MAKE_C_IDENTIFIER:$<UPPER_CASE:${PROJECT_NAME}>>_EXPORTMACROS_H_include_guard_was_processed */
