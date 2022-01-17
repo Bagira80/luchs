@@ -1,0 +1,17 @@
+/**
+ * @file
+ * @brief Defines macros for versions of ${PROJECT_NAME} and its associated product.
+ * @note This header-file is auto-generated. Do not edit it directly!
+ */
+
+#define MODULE_NAME                ${PROJECT_NAME}
+#define VERSION_MAJOR              ${${PROJECT_NAME}_VERSION_MAJOR}
+#define VERSION_MINOR              ${${PROJECT_NAME}_VERSION_MINOR}
+#define VERSION_PATCH              ${${PROJECT_NAME}_VERSION_PATCH}
+#define VERSION_BUILD_NUM          ${${PROJECT_NAME}_VERSION_BUILD_NUM}
+#define VERSION_REVISION           ${${PROJECT_NAME}_VERSION_REVISION}
+#define PRODUCT_NAME               ${PRODUCT_NAME}
+#define PRODUCT_VERSION_MAJOR      ${PRODUCT_VERSION_MAJOR}
+#define PRODUCT_VERSION_MINOR      ${PRODUCT_VERSION_MINOR}
+#define PRODUCT_VERSION_PATCH      ${PRODUCT_VERSION_PATCH}
+#define PRODUCT_VERSION_BUILD_NUM  0
