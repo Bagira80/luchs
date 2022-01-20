@@ -1,0 +1,26 @@
+##
+# @file
+# @note This (CMake-)settings-file is auto-generated. Do not edit it directly!
+# @note This file should (automatically) be included before calling the `project` command in the
+#       associated (top-level) CMakeLists.txt file. (This is automatically taken care of by the
+#       `common-project-pre-actions.cmake` script.)
+#
+# @details Contains product-specific information for the currently being processed CMakeLists.txt
+#          file. This information contains the product description, version and other useful
+#          information.
+#
+
+
+## General information about the associated product.
+##
+
+# Fixed project information.
+set( product_name        "N/A" )
+set( product_description "No public product." )
+set( product_homepage    "https://example.com" )
+
+# Project version.
+set( product_version "0.0.1" )
+
+# Other product-specific settings.
+
