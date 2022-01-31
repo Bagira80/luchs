@@ -18,7 +18,10 @@ include( "internal/add_project_targets_helper" )
 #          equals `${PROJECT_NAME}-<basename>` the alias will be
 #          `${project_export_namespace}::<basename>`.  
 #          Additionally it sets some include search-paths for that target and sets its
-#          `PROJECT_LABEL` property to a sensible value.
+#          `PROJECT_LABEL` property to a sensible value.  
+#          Depending on the value of `ENABLE_SEPARATE_DEBUGSYMBOLS` the target might be
+#          instructed to split debug information into a separate file. (Only applies to `SHARED`,
+#          `STATIC` or `MODULE` targets.)
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param type The type of target. Must be either not given (in which case the `BUILD_SHARED_LIBS`
 #        variable determines its type) or one of: `SHARED`, `STATIC`, `MODULE`, `OBJECT` or
@@ -86,7 +89,9 @@ endfunction()
 #          equals `${PROJECT_NAME}-<basename>` the alias will be
 #          `${project_export_namespace}::<basename>`.  
 #          Additionally it sets some include search-paths for that target and sets its
-#          `PROJECT_LABEL` property to a sensible value.
+#          `PROJECT_LABEL` property to a sensible value.  
+#          Depending on the value of `ENABLE_SEPARATE_DEBUGSYMBOLS` the target might be
+#          instructed to split debug information into a separate file.
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param EXCLUDE_FROM_ALL Determines if the target should be built by default.
 # @note The variables `PROJECT_NAME`, `project_export_namespace`, `PROJECT_VERSION_MAJOR`,
@@ -130,7 +135,9 @@ endfunction()
 #          `${project_export_fullname}::<basename>`.  
 #          Additionally it sets some include search-paths for that target, sets its
 #          `PROJECT_LABEL` property to a sensible value and potentially declares a dependency on
-#          some test-framework (e.g. GoogleTest).
+#          some test-framework (e.g. GoogleTest).  
+#          Depending on the value of `ENABLE_SEPARATE_DEBUGSYMBOLS` the target might be
+#          instructed to split debug information into a separate file.
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param NO_SEPARATE_TEST_RUNS Determines that individual tests of that target shall not be run
 #        individually by CTest, but the entire test-executable with all tests should be run as a

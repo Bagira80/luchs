@@ -101,6 +101,12 @@ function( luchs_internal__add_project_targets__common_setting caller target alia
                 ${PROJECT_BINARY_DIR}/src
         )
     endif()
+
+    # Possibly create separate debug symbols.
+    get_target_property( type ${target} TYPE )
+    if (ENABLE_SEPARATE_DEBUGSYMBOLS AND NOT (${type} STREQUAL "OBJECT_LIBRARY" OR ${type} STREQUAL "INTERFACE_LIBRARY"))
+        create_separate_debugsymbols_file( ${target} )
+    endif()
 endfunction()
 
 
