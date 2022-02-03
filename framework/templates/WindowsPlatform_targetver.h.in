@@ -1,0 +1,33 @@
+/**
+ * @file
+ * @brief Defines macros WINVER and _WIN32_WINNT to the minimal targeted Windows version.
+ * @note This header-file is auto-generated. Do not edit it directly!
+ */
+
+
+/* Undefine existing values, first! */
+#undef WINVER
+#undef _WIN32_WINNT
+
+/* Define the new values. */
+/**
+ * @brief Minimum Windows version supported.
+ * @{
+ */
+#define WINVER        ${WINDOWS_VERSION_IN_HEX}  /* Windows ${CMAKE_SYSTEM_VERSION} */
+#define _WIN32_WINNT  ${WINDOWS_VERSION_IN_HEX}  /* Windows ${CMAKE_SYSTEM_VERSION} */
+/** @} */
+
+
+/* Check that we did not accidentially define them to nothing!
+ *
+ * Note: As this header is auto-generated, it could happen that
+ *       we accidentially did so by not properly setting the
+ *       CMake variable `WINDOWS_VERSION_IN_HEX`.
+ */
+#if (~(~WINVER + 0) == 0) && (~(~WINVER + 1) == 1)
+#   error "Macro WINVER is defined to nothing!"
+#endif
+#if (~(~_WIN32_WINNT + 0) == 0) && (~(~_WIN32_WINNT + 1) == 1)
+#   error "Macro _WIN32_WINNT is defined to nothing!"
+#endif
