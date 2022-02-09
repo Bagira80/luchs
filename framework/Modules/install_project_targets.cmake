@@ -40,13 +40,16 @@ endfunction()
 
 
 ##
-# @name install_project_targets( component targets... [component targets...]... )
+# @name install_project_targets( [options] component targets... [component targets...]... )
 # @brief Installs the given targets for the current project.
 # @details The given targets will be installed and associated with the preceding install-component
 #          and export-set of the current project. The name of the associated component will be
 #          `${project_component_prefix_fullname}-<subcomponent>` and of the associated export-set
 #          will be `${project_export_fullname}-<subcomponent>` where `<subcomponent>` is one of
 #          `Runtime`, `Development` or `Plugins`.
+# @param options Currently only the boolean flag `NO_FOLLOW_ALIAS`. If given, then alias targets
+#        will trigger an error (because they cannot be installed directly). If not given, alias
+#        targets will be resolved to their real targets and these will be installed.
 # @param component The install-component with which the following `targets` will be associated. Must
 #        be one of: "RUNTIME", "DEVELOPMENT", "PLUGINS"
 # @param targets... The targets (associated with the preceding install-`component`) that will be
@@ -61,7 +64,7 @@ endfunction()
 #
 function( install_project_targets )
     cmake_parse_arguments( _luchs
-        ""
+        "NO_FOLLOW_ALIAS"
         ""
         "RUNTIME;DEVELOPMENT;PLUGINS"
         ${ARGN}
@@ -84,7 +87,40 @@ function( install_project_targets )
     if ("${project_component_prefix_fullname}" STREQUAL "")
         message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
     endif()
-    # 2. Install given targets.
+    # 2. Resolve alias targets?
+    if (NOT _luchs_NO_FOLLOW_ALIAS)
+        set( runtime_targets )
+        foreach( target IN LISTS _luchs_RUNTIME )
+            get_target_property( real_target ${target} ALIASED_TARGET )
+            if (real_target)
+                list( APPEND runtime_targets "${real_target}" )
+            else()
+                list( APPEND runtime_targets "${target}" )
+            endif()
+        endforeach()
+        set( _luchs_RUNTIME "${runtime_targets}" )
+        set( development_targets )
+        foreach( target IN LISTS _luchs_DEVELOPMENT )
+            get_target_property( real_target ${target} ALIASED_TARGET )
+            if (real_target)
+                list( APPEND development_targets "${real_target}" )
+            else()
+                list( APPEND development_targets "${target}" )
+            endif()
+        endforeach()
+        set( _luchs_DEVELOPMENT "${development_targets}" )
+        set( plugins_targets )
+        foreach( target IN LISTS _luchs_PLUGINS )
+            get_target_property( real_target ${target} ALIASED_TARGET )
+            if (real_target)
+                list( APPEND plugins_targets "${real_target}" )
+            else()
+                list( APPEND plugins_targets "${target}" )
+            endif()
+        endforeach()
+        set( _luchs_PLUGINS "${plugins_targets}" )
+    endif()
+    # 3. Install given targets.
     foreach (subcomponent IN ITEMS Runtime Development)
         string( TOUPPER "${subcomponent}" component )
         if (DEFINED _luchs_${component})
