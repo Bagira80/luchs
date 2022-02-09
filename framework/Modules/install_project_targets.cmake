@@ -1,6 +1,6 @@
 ##
 # @file
-# @details Defines functions which install headers/targets/debug-symbols for projects.
+# @details Defines functions which (help) install headers/targets/debug-symbols for projects.
 # @note These functions should be used by each CMakeLists.txt that wants to install its targets.
 # @note These functions are extended versions of the `install` commands.
 #
@@ -11,6 +11,71 @@ include_guard()
 include( "GNUInstallDirs" )
 # Note: It is recommended to set CMAKE_INSTALL_DOCDIR after each include of GNUInstallDirs!
 set( CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/doc/${PROJECT_NAME}" )
+
+
+##
+# @name register_project_targets( component targets... [component targets...]... )
+# @brief Registers the given targets with the determined install-component(s) for the current project.
+# @details The given targets will be registered and associated with the determined
+#          install-component(s) of the current project. The names of these install-component(s)
+#          will be `${project_component_prefix_fullname}-<subcomponent>` where `<subcomponent>` is
+#          one of `Runtime`, `Development` or `Plugins`.
+# @param component The install-component with which the following `targets` will be associated.
+#        Must be one of: `RUNTIME`, `DEVELOPMENT`, `PLUGINS`
+# @param targets... The names of CMake targets which will be associated with the preceding
+#        install-`component`.
+# @note  Omitting the `targets` for an install-component is allowed. However, in that case no
+#        target will be registered with the corresponding install-component.
+# @note Registering a target stores its name in a global property which is named
+#       `TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-<subcomponent>`
+#       where `<subcomponent> is one of `Runtime`, `Development` or `Plugins`.
+# @note Any colons (e.g. `::`) within `${project_component_prefix_fullname}` will **not** be
+#       replaced by underscores in the names of the global properties! This makes it more difficult
+#       to access these properties (verbatim), but then again these should not be accessed directly
+#       anyway.
+#
+function( register_project_targets )
+    cmake_parse_arguments( _luchs
+        ""
+        ""
+        "RUNTIME;DEVELOPMENT;PLUGINS"
+        ${ARGN}
+    )
+    # 1. Some sanity checks.
+    if (${ARGC} EQUAL 0)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments!" )
+    endif()
+    if (DEFINED _luchs_UNPARSED_ARGUMENTS)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing install-component!" )
+    endif()
+    if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
+        foreach( keyword IN LISTS _luchs_KEYWORDS_MISSING_VALUES )
+            message( DEBUG "${CMAKE_CURRENT_FUNCTION}: Missing arguments of '${keyword}' for ${PROJECT_NAME}!" )
+        endforeach()
+    endif()
+    if ("${project_component_prefix_fullname}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
+    endif()
+    # 2. Register targets with their component in special global property.
+    if (_luchs_RUNTIME)
+        set_property( GLOBAL APPEND PROPERTY
+            TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Runtime
+                ${_luchs_RUNTIME}
+        )
+    endif()
+    if (_luchs_DEVELOPMENT)
+        set_property( GLOBAL APPEND PROPERTY
+            TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Development
+                ${_luchs_DEVELOPMENT}
+        )
+    endif()
+    if (_luchs_PLUGINS)
+        set_property( GLOBAL APPEND PROPERTY
+            TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Plugins
+                ${_luchs_PLUGINS}
+        )
+    endif()
+endfunction()
 
 
 ##
@@ -40,13 +105,15 @@ endfunction()
 
 
 ##
-# @name install_project_targets( [options] component targets... [component targets...]... )
-# @brief Installs the given targets for the current project.
-# @details The given targets will be installed and associated with the preceding install-component
-#          and export-set of the current project. The name of the associated component will be
-#          `${project_component_prefix_fullname}-<subcomponent>` and of the associated export-set
-#          will be `${project_export_fullname}-<subcomponent>` where `<subcomponent>` is one of
-#          `Runtime`, `Development` or `Plugins`.
+# @name install_project_targets( [options] [component targets...]... )
+# @brief Installs the given targets or the already registered ones for the current project.
+# @details The given targets will be installed and associated/registered with the preceding
+#          install-component and export-set of the current project. The name of the associated
+#          install-component will be `${project_component_prefix_fullname}-<subcomponent>` and of
+#          the associated export-set will be `${project_export_fullname}-<subcomponent>` where
+#          `<subcomponent>` is one of `Runtime`, `Development` or `Plugins`.  
+#          If no targets were given then the targets already registered via
+#          `register_project_targets` will be installed instead.
 # @param options Currently only the boolean flag `NO_FOLLOW_ALIAS`. If given, then alias targets
 #        will trigger an error (because they cannot be installed directly). If not given, alias
 #        targets will be resolved to their real targets and these will be installed.
@@ -70,8 +137,27 @@ function( install_project_targets )
         ${ARGN}
     )
     # 1. Some sanity checks.
-    if (${ARGC} EQUAL 0)
-        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments!" )
+    if (NOT DEFINED _luchs_RUNTIME AND NOT DEFINED _luchs_DEVELOPMENT AND NOT DEFINED _luchs_PLUGINS)
+        # No targets given. Then we should at least have already registered targets.
+        message( DEBUG "${CMAKE_CURRENT_FUNCTION}: Using registered targets for project '${PROJECT_NAME}'!" )
+        get_cmake_property( runtime_targets     TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Runtime )
+        get_cmake_property( development_targets TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Development )
+        get_cmake_property( plugins_targets     TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Plugins )
+        if (NOT runtime_targets AND NOT development_targets AND NOT plugins_targets)
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments (and no targets already registered with `register_project_targets`)!" )
+        endif()
+        if (NOT runtime_targets)
+            unset( runtime_targets )
+        endif()
+        if (NOT development_targets)
+            unset( development_targets )
+        endif()
+        if (NOT plugins_targets)
+            unset( plugins_targets )
+        endif()
+        set( use_registered_targets TRUE )
+    else()
+        set( use_registered_targets FALSE )
     endif()
     if (DEFINED _luchs_UNPARSED_ARGUMENTS)
         message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing install-component!" )
@@ -87,7 +173,15 @@ function( install_project_targets )
     if ("${project_component_prefix_fullname}" STREQUAL "")
         message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
     endif()
-    # 2. Resolve alias targets?
+    # 2. Register targets with their components.
+    if (NOT use_registered_targets)
+        register_project_targets( RUNTIME ${_luchs_RUNTIME} DEVELOPMENT ${_luchs_DEVELOPMENT} PLUGINS ${_luchs_PLUGINS} )
+    else()
+        set( _luchs_RUNTIME     ${runtime_targets} )
+        set( _luchs_DEVELOPMENT ${development_targets} )
+        set( _luchs_PLUGINS     ${plugins_targets} )
+    endif()
+    # 3. Resolve alias targets?
     if (NOT _luchs_NO_FOLLOW_ALIAS)
         set( runtime_targets )
         foreach( target IN LISTS _luchs_RUNTIME )
@@ -120,7 +214,7 @@ function( install_project_targets )
         endforeach()
         set( _luchs_PLUGINS "${plugins_targets}" )
     endif()
-    # 3. Install given targets.
+    # 4. Install given targets.
     foreach (subcomponent IN ITEMS Runtime Development)
         string( TOUPPER "${subcomponent}" component )
         if (DEFINED _luchs_${component})
@@ -199,24 +293,43 @@ endfunction()
 
 
 ##
-# @name install_project_debugsymbols( targets... )
+# @name install_project_debugsymbols( [targets...] )
 # @brief Installs debug-symbols files of the given targets for the current project.
 # @details The debug-symbols files of the given targets will be installed to the same location
 #          where the targets would be installed. Additionally, they will be associated with the
 #          "DEBUGSYMBOLS" install-component of the current project, which will be named
-#          `${project_component_prefix_fullname}-DebugSymbols`.
+#          `${project_component_prefix_fullname}-DebugSymbols`.  
+#          If no targets were given then the debug-symbols of the targets already registered via
+#          `register_project_targets` will be installed instead.
 # @param targets... The targets whose debug-symbols files will be installed.
 # @note This will only be considered for configurations `Debug` and `RelWithDebInfo`.
 #
 function( install_project_debugsymbols )  # targets...
     # 1. Some sanity checks.
     if (${ARGC} EQUAL 0)
-        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments (= target names)!" )
+        # No targets given. Then we should at least have already registered targets.
+        message( DEBUG "${CMAKE_CURRENT_FUNCTION}: Using registered targets for project '${PROJECT_NAME}'!" )
+        get_cmake_property( runtime_targets     TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Runtime )
+        get_cmake_property( development_targets TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Development )
+        get_cmake_property( plugins_targets     TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Plugins )
+        if (NOT runtime_targets AND NOT development_targets AND NOT plugins_targets)
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments (and no targets already registered with `register_project_targets`)!" )
+        endif()
+        # Install debug symbols from registered targets.
+        set( targets )
+        list( APPEND targets ${runtime_targets} ${development_targets} ${plugins_targets} )
+        list( FILTER targets EXCLUDE REGEX "^.*NOTFOUND$" )
+        list( REMOVE_DUPLICATES targets )
+        set( use_registered_targets ON )
+    else()
+        # Install debug symbols from given targets.
+        set( targets "${ARGN}" )
+        set( use_registered_targets OFF )
     endif()
     if ("${project_component_prefix_fullname}" STREQUAL "")
         message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
     endif()
-    foreach( target IN ITEMS ${ARGN} )
+    foreach( target IN ITEMS ${targets} )
         if (NOT TARGET ${target})
             message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Given argument '${target}' is no valid target!" )
         endif()
@@ -225,7 +338,7 @@ function( install_project_debugsymbols )  # targets...
     set( bin_dir_files )
     set( lib_dir_files )
     set( plugins_dir_files )
-    foreach( target IN ITEMS ${ARGN} )
+    foreach( target IN ITEMS ${targets} )
         set( windows_genex "$<$<PLATFORM_ID:Windows>:$<TARGET_PDB_FILE:${target}>>" )
         set( linux_genex   "$<$<PLATFORM_ID:Linux>:$<TARGET_FILE:${target}>.dwp>" )
         get_target_property( prop ${target} TYPE )
