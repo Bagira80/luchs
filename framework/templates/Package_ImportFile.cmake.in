@@ -1,0 +1,64 @@
+##
+# @file
+# @brief Imports all (available) export-sets of the package and looks for their dependencies.
+# @note This (CMake-)script is auto-generated. Do not edit it directly!
+# @note For generation of this file the CMake variable `EXPORTED_TARGETS` must be set to the list
+#       of CMake targets that shall be exported and whose dependencies shall be loaded by this
+#       script when importing them.
+# @note For generation of this file the CMake variable `ROOT_NAMESPACE` must be set to contain the
+#       root-namespace of the exported targets (the part before the first `::`).
+#
+
+
+# Include package configuration files for individual export-sets.
+# Note: For all targets from these export-sets imported targets will be generated automatically.
+include( ${CMAKE_CURRENT_LIST_DIR}/@component_file_prefix@-Runtime.cmake OPTIONAL )
+include( ${CMAKE_CURRENT_LIST_DIR}/@component_file_prefix@-Development.cmake OPTIONAL )
+include( ${CMAKE_CURRENT_LIST_DIR}/@component_file_prefix@-Plugins.cmake OPTIONAL )
+
+# Determine if the newly imported targets have dependencies
+# which are common and can automatically be found, too.
+include( load-common-dependencies OPTIONAL RESULT_VARIABLE PATH_TO_load-common-dependencies )
+if (PATH_TO_load-common-dependencies)
+    foreach( imported_target IN ITEMS @EXPORTED_TARGETS@ )
+        if (NOT TARGET ${imported_target})
+            continue()
+        endif()
+        # Check list of dependencies for common dependencies.
+        get_target_property( dependencies_list ${imported_target} INTERFACE_LINK_LIBRARIES )
+        if (dependencies_list)
+            foreach( dependency IN LISTS dependencies_list )
+                # Skip already known targets.
+                if (TARGET ${dependency})
+                    continue()
+                endif()
+                # Skip generator-expressions.
+                if (dependency MATCHES "^[$][<].+[>]")
+                    message( DEBUG "Skip searching for following indirect dependency of package `${CMAKE_FIND_PACKAGE_NAME}`: ${dependency}" )
+                    continue()
+                endif()
+                # Skip "@ROOT_NAMESPACE@" dependencies.
+                if (dependency MATCHES "^@ROOT_NAMESPACE@::.+")
+                    message( DEBUG "Skip searching for following indirect dependency of package `${CMAKE_FIND_PACKAGE_NAME}`: ${dependency}" )
+                    continue()
+                endif()
+                # Skip dependencies which do not have a namespace format.
+                if (NOT (dependency MATCHES "^.+::.+$"))
+                    message( DEBUG "Skip searching for following indirect dependency of package `${CMAKE_FIND_PACKAGE_NAME}`: ${dependency}" )
+                    continue()
+                endif()
+                # Retrieve base name of dependency and try to load it.
+                string( REGEX MATCH "^[^:]+" dependency_basename ${dependency} )
+                message( DEBUG "Searching for indirect dependency of package `${CMAKE_FIND_PACKAGE_NAME}`: ${dependency}" )
+                if (${CMAKE_FIND_PACKAGE_NAME}_IMPORT_GLOBALLY)
+                    load_common_dependency( ${dependency_basename} GLOBAL )
+                else()
+                    load_common_dependency( ${dependency_basename} )
+                endif()
+            endforeach()
+        endif()
+    endforeach()
+elseif (NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+    message( WARNING "Unable to look for common dependencies of package `${CMAKE_FIND_PACKAGE_NAME}` "
+                     "because the luchs helper script `load-common-dependencies.cmake` cannot be found." )
+endif()
