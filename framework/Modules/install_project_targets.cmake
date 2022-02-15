@@ -450,3 +450,73 @@ function( install_project_grouppackageconfig name )
         "${name}=${_luchs_VERSION}"
     )
 endfunction()
+
+
+##
+# @name generate_project_scripts( DEPENDENCY_LOADER|PACKAGE_CONFIG outfile )
+# @brief Generates the dependency-loader and/or package-config script for the current project
+# @details The denoted script for the current project will be generated under the name and path of
+#          the given output-file. It contains information about the targets associated with the
+#          "RUNTIME", "DEVELOPMENT" and "PLUGINS" components of the current project.
+# @param DEPENDENCY_LOADER denotes that the current project's dependency-loader script shall be
+#        generated under the given name. When loaded later (as part of a `find_package`) call it
+#        tries to load dependencies of these targets, too.
+# @param PACKAGE_CONFIG denotes that the current project's package-config script shall be generated
+#        which will later be used by `find_package` to import the exported targets of the current
+#        project.
+# @param outfile The filename (with path) under which the generated script will be stored.
+#
+function( generate_project_scripts )
+    cmake_parse_arguments( _luchs
+        ""
+        "DEPENDENCY_LOADER;PACKAGE_CONFIG"
+        ""
+        ${ARGN}
+    )
+    # 1. Some sanity checks.
+    if (NOT DEFINED _luchs_DEPENDENCY_LOADER AND NOT DEFINED _luchs_PACKAGE_CONFIG)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Neither 'DEPENDENCY_LOADER' nor 'PACKAGE_CONFIG' argument given!" )
+    endif()
+    if (DEFINED _luchs_DEPENDENCY_LOADER AND DEFINED _luchs_PACKAGE_CONFIG)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Only either 'DEPENDENCY_LOADER' or 'PACKAGE_CONFIG' argument may be given!" )
+    endif()
+    if (DEFINED _luchs_UNPARSED_ARGUMENTS)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Additional, unexpected arguments!" )
+    endif()
+    if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
+        foreach( keyword IN LISTS _luchs_KEYWORDS_MISSING_VALUES )
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing argument for '${keyword}'!" )
+        endforeach()
+    endif()
+    if ("${project_component_prefix_fullname}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
+    endif()
+    if ("${project_export_namespace}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_export_namespace'!" )
+    endif()
+    # 2. Retrieve list of to-be-exported targets of the "Runtime", "Development" and "Plugins" components of the current project.
+    get_cmake_property( runtime_targets     TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Runtime )
+    get_cmake_property( development_targets TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Development )
+    get_cmake_property( plugins_targets     TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-Plugins )
+    set( EXPORTED_TARGETS )
+    list( APPEND EXPORTED_TARGETS ${runtime_targets} ${development_targets} ${plugins_targets} )
+    list( FILTER EXPORTED_TARGETS EXCLUDE REGEX "^.*NOTFOUND$" )
+    # 3. Calculate root namespace.
+    string( REPLACE "::" ";" namespace_component_list "${project_export_namespace}" )
+    list( GET namespace_component_list 0 ROOT_NAMESPACE )
+    # 4. Generate scripts.
+    if (DEFINED _luchs_DEPENDENCY_LOADER)
+        configure_file(
+            "${LUCHS_TEMPLATES_DIR}/Package_ImportFile_DependencyLoader.cmake.in"
+            ${_luchs_DEPENDENCY_LOADER}
+            @ONLY
+        )
+    endif()
+    if (DEFINED _luchs_PACKAGE_CONFIG)
+        configure_file(
+            "${LUCHS_TEMPLATES_DIR}/Package_ImportFile.cmake.in"
+            ${_luchs_PACKAGE_CONFIG}
+            @ONLY
+        )
+    endif()
+endfunction()
