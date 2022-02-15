@@ -1,0 +1,52 @@
+##
+# @file
+# @details Tries to find "@ROOT_NAMESPACE@" dependencies of the exported CMake targets list below.
+# @note This (CMake-)script is auto-generated. Do not edit it directly!
+# @note For generation of this file the CMake variable `EXPORTED_TARGETS` must be set to the list
+#       of CMake targets that shall be exported and whose dependencies shall be loaded by this
+#       script when importing them.
+# @note For generation of this file the CMake variable `ROOT_NAMESPACE` must be set to contain the
+#       root-namespace of the exported targets (the part before the first `::`).
+#
+
+
+# As this script will probably be loaded automatically from the package configuration
+# file during a `find_package` call, we must make sure to not accidentially override the
+# `_IMPORT_PREFIX` variable.
+# Therefore we are storing a backup of it here and have to properly reset it to its
+# original value at the end of this script!
+set( __backup_of_IMPORT_PREFIX_in_${CMAKE_CURRENT_LIST_FILE} "${_IMPORT_PREFIX}" )
+
+# Determine if the newly imported targets have dependencies which are specific
+# "@ROOT_NAMESPACE@" dependencies and can automatically be found.
+foreach( imported_target IN ITEMS @EXPORTED_TARGETS@ )
+    if (NOT TARGET ${imported_target})
+        continue()
+    endif()
+    # Check list of dependencies for "@ROOT_NAMESPACE@::*" dependency targets.
+    get_target_property( dependencies_list ${imported_target} INTERFACE_LINK_LIBRARIES )
+    if (dependencies_list)
+        foreach( dependency IN LISTS dependencies_list )
+            # Only check dependencies which have the correct "@ROOT_NAMESPACE@::" namespace.
+            if (dependency MATCHES "^@ROOT_NAMESPACE@::.+")
+                # Skip already known targets.
+                if (TARGET ${dependency})
+                    continue()
+                endif()
+                # If the current package was imported globally its dependency should be imported globally as well.
+                string( REGEX REPLACE "::" "_" dependency_var "${dependency}" )
+                set( ${dependency_var}_GLOBALLY_IMPORTED ${${CMAKE_FIND_PACKAGE_NAME}_GLOBALLY_IMPORTED} )
+                # Determine component and try to find and load it.
+                string( REGEX REPLACE "^@ROOT_NAMESPACE@::" "" component "${dependency}" )
+                find_package( @ROOT_NAMESPACE@ QUIET OPTIONAL_COMPONENTS ${component} CONFIG PATHS ${CMAKE_CURRENT_LIST_DIR} )
+                if (NOT TARGET ${dependency})
+                    message( DEBUG "Cannot find the following dependency of imported target '${imported_target}': ${dependency}" )
+                endif()
+            endif()
+        endforeach()
+    endif()
+endforeach()
+
+# Reset _IMPORT_PREFIX to its original value.
+set( _IMPORT_PREFIX "${__backup_of_IMPORT_PREFIX_in_${CMAKE_CURRENT_LIST_FILE}}" )
+unset( __backup_of_IMPORT_PREFIX_in_${CMAKE_CURRENT_LIST_FILE} )
