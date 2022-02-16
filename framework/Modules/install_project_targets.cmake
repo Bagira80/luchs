@@ -501,10 +501,13 @@ function( generate_project_scripts )
     set( EXPORTED_TARGETS )
     list( APPEND EXPORTED_TARGETS ${runtime_targets} ${development_targets} ${plugins_targets} )
     list( FILTER EXPORTED_TARGETS EXCLUDE REGEX "^.*NOTFOUND$" )
-    # 3. Calculate root namespace.
+    # 3. Calculate file/directory-prefix from project's component-prefix.
+    string( REPLACE ":" "_" component_file_prefix "${project_component_prefix_fullname}" )
+    string( TOLOWER "${component_file_prefix}" lowercase_component_file_prefix )
+    # 4. Calculate root namespace.
     string( REPLACE "::" ";" namespace_component_list "${project_export_namespace}" )
     list( GET namespace_component_list 0 ROOT_NAMESPACE )
-    # 4. Generate scripts.
+    # 5. Generate scripts.
     if (DEFINED _luchs_DEPENDENCY_LOADER)
         configure_file(
             "${LUCHS_TEMPLATES_DIR}/Package_ImportFile_DependencyLoader.cmake.in"
@@ -575,37 +578,199 @@ function( install_project_exportsets )
     if ("${project_component_prefix_fullname}" STREQUAL "")
         message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
     endif()
-    if ("${project_output_fullname}" STREQUAL "")
-        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_output_fullname'!" )
-    endif()
-    # 2. Install associated export-sets and dependency-loader scripts.
+    # 2. Generate the "make-imported-global" scripts.
+    foreach (subcomponent IN ITEMS Runtime Development Plugins)
+        string( TOUPPER "${subcomponent}" component )
+        if (DEFINED _luchs_${component})
+            # Retrieve list of to-be-exported targets and generate the script.
+            get_cmake_property( EXPORTED_TARGETS TARGETS_ASSOCIATED_WITH_COMPONENT_${project_component_prefix_fullname}-${subcomponent} )
+            list( FILTER EXPORTED_TARGETS EXCLUDE REGEX "^.*NOTFOUND$" )
+            configure_file(
+                "${LUCHS_TEMPLATES_DIR}/Package_ImportFile_MakeImportedGlobal.cmake.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/_luchs/Package_ImportFile_MakeImportedGlobal.${subcomponent}.cmake"
+                @ONLY
+            )
+        endif()
+    endforeach()
+    # 3. Calculate file/directory-prefix and destination from project's component-prefix.
+    string( REPLACE ":" "_" component_file_prefix "${project_component_prefix_fullname}" )
+    set( destination "${CMAKE_INSTALL_LIBDIR}/cmake/${component_file_prefix}-${PROJECT_VERSION}" )
+    # 4. Install associated export-sets, "make-imported-global" and "dependency-loader" scripts.
     foreach (subcomponent IN ITEMS Runtime Development)
         string( TOUPPER "${subcomponent}" component )
         if (DEFINED _luchs_${component})
             install( EXPORT ${project_export_fullname}-${subcomponent}
-                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
-                FILE        ${project_output_fullname}-${subcomponent}.cmake
+                DESTINATION ${destination}
+                FILE        ${component_file_prefix}-${subcomponent}.cmake
                 NAMESPACE   ${project_export_namespace}::
                 COMPONENT   ${project_component_prefix_fullname}-Development  # Always part of the DEVELOPMENT component!
             )
             install( FILES "${_luchs_${component}}"
-                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
-                RENAME      ${project_output_fullname}-${subcomponent}--DepsLoader.cmake
+                DESTINATION ${destination}
+                RENAME      ${component_file_prefix}-${subcomponent}-1000_DepsLoader.cmake
+                COMPONENT   ${project_component_prefix_fullname}-Development  # Always part of the DEVELOPMENT component!
+            )
+            install( FILES  "${CMAKE_CURRENT_BINARY_DIR}/_luchs/Package_ImportFile_MakeImportedGlobal.${subcomponent}.cmake"
+                DESTINATION ${destination}
+                RENAME      ${component_file_prefix}-${subcomponent}-0010_MakeImportedGlobal.cmake
                 COMPONENT   ${project_component_prefix_fullname}-Development  # Always part of the DEVELOPMENT component!
             )
         endif()
     endforeach()
     if (DEFINED _luchs_PLUGINS)
         install( EXPORT ${project_export_fullname}-Plugins
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
-            FILE        ${project_output_fullname}-Plugins.cmake
+            DESTINATION ${destination}
+            FILE        ${component_file_prefix}-Plugins.cmake
             NAMESPACE   ${project_export_namespace}::
             COMPONENT   ${project_component_prefix_fullname}-Plugins
         )
         install( FILES "${_luchs_PLUGINS}"
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
-            RENAME      ${project_output_fullname}-Plugins--DepsLoader.cmake
+            DESTINATION ${destination}
+            RENAME      ${component_file_prefix}-Plugins-1000_DepsLoader.cmake
             COMPONENT   ${project_component_prefix_fullname}-Plugins
+        )
+        install( FILES  "${CMAKE_CURRENT_BINARY_DIR}/_luchs/Package_ImportFile_MakeImportedGlobal.Plugins.cmake"
+            DESTINATION ${destination}
+            RENAME      ${component_file_prefix}-Plugins-0010_MakeImportedGlobal.cmake
+            COMPONENT   ${project_component_prefix_fullname}-Plugins
+        )
+    endif()
+endfunction()
+
+
+##
+# @name install_project_packageconfig( configfile [COMPATIBILITY <mode>] [GROUP_PACKAGE <name>] )
+# @brief Installs the package-config file for the current project.
+# @details The given package-config file for the current project will be installed. Additionally,
+#          the associated version file will be generated and installed as well.  
+#          If the associated package shall be bundled as a component with another (group-)package,
+#          an additional file will be installed to that group-package's directory with information
+#          about the bundled package.  
+#          All files will be associated with the "DEVELOPMENT" install-component of the current
+#          project.
+# @param configfile The package-config file for the current project which will be installed
+#        together with the associated package-config-version file.
+# @param COMPATIBILITY Determines the version-compatibility mode. Must be one of `AnyNewerVersion`,
+#        `SameMajorVersion`, `SameMinorVersion` or `ExactVersion`. Defaults to `SameMajorVersion`.
+# @param GROUP_PACKAGE The name of the group-package with which the associated package shall be
+#        bundled as a component. If not given, the value of the variable
+#        `LUCHS_DEFAULT_GROUP_PACKAGE` is taken instead, if it is set. Otherwise the value defaults
+#        to `NONE`. The value `NONE` determines that the associated package shall not be bundled
+#        with any other package.
+# @note A group-package is the package that can be searched for with `find_package` in order to
+#       load some or all of its (bundled) components.
+#
+function( install_project_packageconfig configfile )
+    cmake_parse_arguments( _luchs
+        ""
+        "COMPATIBILITY;GROUP_PACKAGE"
+        ""
+        ${ARGN}
+    )
+    # 1. Some sanity checks.
+    if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
+        foreach( keyword IN LISTS _luchs_KEYWORDS_MISSING_VALUES )
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing argument for '${keyword}'!" )
+        endforeach()
+    endif()
+    if (DEFINED _luchs_UNPARSED_ARGUMENTS)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Additional, unexpected arguments!" )
+    endif()
+    if (NOT DEFINED _luchs_COMPATIBILITY)
+        set( _luchs_COMPATIBILITY "SameMajorVersion" )
+    elseif (NOT _luchs_COMPATIBILITY MATCHES "^(AnyNewer|SameMajor|SameMinor|Exact)Version$" )
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Invalid argument for 'COMPATIBILITY' option! (Only valid "
+                            "values are: AnyNewerVersion, SameMajorVersion, SameMinorVersion, ExactVersion)" )
+    endif()
+    if (NOT DEFINED _luchs_GROUP_PACKAGE)
+        if (DEFINED LUCHS_DEFAULT_GROUP_PACKAGE)
+            set( _luchs_GROUP_PACKAGE "${LUCHS_DEFAULT_GROUP_PACKAGE}" )
+        else()
+            set( _luchs_GROUP_PACKAGE "NONE" )
+        endif()
+    endif()
+    if ("${project_component_prefix_fullname}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
+    endif()
+    if ("${project_component_separator}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_separator'!" )
+    endif()
+    if ("${project_export_fullname}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_export_fullname'!" )
+    endif()
+    # 2. Calculate file/directory-prefix and destination from project's component-prefix.
+    string( REPLACE ":" "_" component_file_prefix "${project_component_prefix_fullname}" )
+    string( TOLOWER "${component_file_prefix}" lowercase_component_file_prefix )
+    set( destination "${CMAKE_INSTALL_LIBDIR}/cmake/${component_file_prefix}-${PROJECT_VERSION}" )
+    # 3. Install associated package-config file.
+    install( FILES "${configfile}"
+        DESTINATION ${destination}
+        RENAME      ${lowercase_component_file_prefix}-config.cmake
+        COMPONENT   ${project_component_prefix_fullname}-Development
+    )
+    # 4. Generate and install associated package-config-version file.
+    include( CMakePackageConfigHelpers )
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${component_file_prefix}.config-version.cmake"
+        COMPATIBILITY ${_luchs_COMPATIBILITY}
+    )
+    install( FILES "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${component_file_prefix}.config-version.cmake"
+        DESTINATION ${destination}
+        RENAME      ${lowercase_component_file_prefix}-config-version.cmake
+        COMPONENT   ${project_component_prefix_fullname}-Development
+    )
+    # 5. Bundle it with some group-package?
+    if (NOT _luchs_GROUP_PACKAGE STREQUAL "NONE")
+        # Extract version of the group-package with which to bundle.
+        get_property( registered_group_packages GLOBAL PROPERTY LUCHS_REGISTRY_GROUP_PACKAGES )
+        list( FILTER registered_group_packages INCLUDE REGEX "^${_luchs_GROUP_PACKAGE}=.+" )
+        list( REMOVE_DUPLICATES registered_group_packages )
+        list( LENGTH registered_group_packages length )
+        if (length EQUAL 0)
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Group-package '${_luchs_GROUP_PACKAGE}' has not been registered before! "
+                                "(Make sure to call 'install_project_grouppackageconfig(${luchs_GROUP_PACKAGE})' before.)" )
+        elseif (length GREATER 1)
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Group-package '${_luchs_GROUP_PACKAGE}' has been registered more than once before! "
+                                "(Make sure to call 'install_project_grouppackageconfig(${luchs_GROUP_PACKAGE})' only once before.)" )
+        endif()
+        string( REGEX REPLACE "^${_luchs_GROUP_PACKAGE}=(.+)$" "\\1" group_package_version "${registered_group_packages}" )
+        if ("${group_package_version}" STREQUAL "")
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Unable to retrieve version number of group-package '${_luchs_GROUP_PACKAGE}'!" )
+        endif()
+        # Generate the file containing information about the current project's package that shall be bundled with the group-package.
+        set( content "set(BUNDLED_COMPONENT_NAME \"@project_component_prefix_fullname@\")"
+                     "set(BUNDLED_COMPONENT_NAME_SEPARATOR \"@project_component_separator@\")"
+                     "set(BUNDLED_COMPONENT_SEARCH_NAME \"@component_file_prefix@\")"
+                     "set(BUNDLED_COMPONENT_VERSION \"@PROJECT_VERSION@\")"
+                     "set(BUNDLED_COMPONENT_EXPORTNAME \"@project_export_fullname@\")"
+        )
+        list( JOIN content "\n" content )
+        file( CONFIGURE
+            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${component_file_prefix}.BundledComponent.cmake"
+            CONTENT "${content}"
+            @ONLY NEWLINE_STYLE LF
+        )
+        # Determine the name of the information file that shall be installed to the group-package's (install-)directory.
+        # Note: If the group-package's name equals the first part of the current project's component prefix
+        #       (when ignoring case) then strip it from the name for the information file.
+        string( FIND "${project_component_prefix_fullname}" "${project_component_separator}" index )
+        if (NOT index EQUAL -1)
+            string( SUBSTRING "${project_component_prefix_fullname}" 0 ${index} first_component )
+            string( TOLOWER "${first_component}" lowercase_first_component )
+            string( TOLOWER "${_luchs_GROUP_PACKAGE}" lowercase_group_package )
+            if (lowercase_group_package STREQUAL lowercase_first_component)
+                string( LENGTH "${project_component_separator}" length )
+                math( EXPR index "${index} + ${length}" )
+                string( SUBSTRING "${project_component_prefix_fullname}" ${index} -1 remaining_component )
+                string( REPLACE ":" "_" lowercase_component_file_prefix "${remaining_component}" )
+                string( TOLOWER "${lowercase_component_file_prefix}" lowercase_component_file_prefix )
+            endif()
+        endif()
+        # Install information file into group-package's (install-)directory.
+        install( FILES "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${component_file_prefix}.BundledComponent.cmake"
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_luchs_GROUP_PACKAGE}-${group_package_version}/components
+            RENAME      ${lowercase_component_file_prefix}.BundledComponent.cmake
+            COMPONENT   ${project_component_prefix_fullname}-Development
         )
     endif()
 endfunction()
