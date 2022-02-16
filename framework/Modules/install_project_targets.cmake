@@ -221,7 +221,7 @@ function( install_project_targets )
             # Supporting file-sets?
             if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
                 install( TARGETS ${_luchs_${component}}
-                    EXPORT ${project_export_fullname}-${subcomponent}
+                    EXPORT ${project_export_fullname}-Development
                     INCLUDES DESTINATION   ${CMAKE_INSTALL_INCLUDEDIR}
                     RUNTIME
                         DESTINATION        ${CMAKE_INSTALL_BINDIR}
@@ -242,7 +242,7 @@ function( install_project_targets )
                 )
             else()
                 install( TARGETS ${_luchs_${component}}
-                    EXPORT ${project_export_fullname}-${subcomponent}
+                    EXPORT ${project_export_fullname}-Development
                     INCLUDES DESTINATION   ${CMAKE_INSTALL_INCLUDEDIR}
                     RUNTIME
                         DESTINATION        ${CMAKE_INSTALL_BINDIR}
@@ -596,15 +596,15 @@ function( install_project_exportsets )
     string( REPLACE ":" "_" component_file_prefix "${project_component_prefix_fullname}" )
     set( destination "${CMAKE_INSTALL_LIBDIR}/cmake/${component_file_prefix}-${PROJECT_VERSION}" )
     # 4. Install associated export-sets, "make-imported-global" and "dependency-loader" scripts.
+    install( EXPORT ${project_export_fullname}-Development
+        DESTINATION ${destination}
+        FILE        ${component_file_prefix}-Development.cmake
+        NAMESPACE   ${project_export_namespace}::
+        COMPONENT   ${project_component_prefix_fullname}-Development  # Always part of the DEVELOPMENT component!
+    )
     foreach (subcomponent IN ITEMS Runtime Development)
         string( TOUPPER "${subcomponent}" component )
         if (DEFINED _luchs_${component})
-            install( EXPORT ${project_export_fullname}-${subcomponent}
-                DESTINATION ${destination}
-                FILE        ${component_file_prefix}-${subcomponent}.cmake
-                NAMESPACE   ${project_export_namespace}::
-                COMPONENT   ${project_component_prefix_fullname}-Development  # Always part of the DEVELOPMENT component!
-            )
             install( FILES "${_luchs_${component}}"
                 DESTINATION ${destination}
                 RENAME      ${component_file_prefix}-${subcomponent}-1000_DepsLoader.cmake
