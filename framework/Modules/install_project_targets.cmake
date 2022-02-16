@@ -520,3 +520,92 @@ function( generate_project_scripts )
         )
     endif()
 endfunction()
+
+
+##
+# @name install_project_exportsets( [component] depsloader... )
+# @brief Installs the export-set(s) of the given (or all) component(s) for the current project.
+# @details Either the export-set(s) associated with the given component(s) of the current project
+#          will be installed or the export-sets of all three components of the current project if
+#          no component was explicitly given. The name of the associated export-set must be
+#          `${project_export_fullname}-<subcomponent>` where `<subcomponent>` is one of
+#          `Runtime`, `Development` or `Plugins`.
+# @param component The component whose export-set shall be installed. Must be one of: `RUNTIME`,
+#        `DEVELOPMENT`, `PLUGINS`
+# @param depsloader The dependency-loader CMake script (associated either with the `component` that
+#        came before or associated with all components of the current project) which will be
+#        installed as well.
+# @note In order for the depsloader script to be automatically loaded when later importing this
+#       export set again, we exploit a mechanism that originally only was intended to load
+#       additional files with configuration-specific settings. ("Hyrum's Law" says "hi".)
+#       However, it is the only (suitable) way to load the depsloader script. :-/
+#
+function( install_project_exportsets )
+    cmake_parse_arguments( _luchs
+        ""
+        "RUNTIME;DEVELOPMENT;PLUGINS"
+        ""
+        ${ARGN}
+    )
+    # 1. Some sanity checks.
+    if (${ARGC} EQUAL 0)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments!" )
+    endif()
+    if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
+        foreach( keyword IN LISTS _luchs_KEYWORDS_MISSING_VALUES )
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing argument for '${keyword}'!" )
+        endforeach()
+    endif()
+    if (DEFINED _luchs_UNPARSED_ARGUMENTS)
+        if (${ARGC} EQUAL 1)
+            set( _luchs_RUNTIME     ${_luchs_UNPARSED_ARGUMENTS} )
+            set( _luchs_DEVELOPMENT ${_luchs_UNPARSED_ARGUMENTS} )
+            set( _luchs_PLUGINS     ${_luchs_UNPARSED_ARGUMENTS} )
+        else()
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Either give a single dependency-loader script for all components or give one per component. Not both!" )
+        endif()
+    endif()
+
+    if ("${project_export_fullname}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_export_fullname'!" )
+    endif()
+    if ("${project_export_namespace}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_export_namespace'!" )
+    endif()
+    if ("${project_component_prefix_fullname}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_component_prefix_fullname'!" )
+    endif()
+    if ("${project_output_fullname}" STREQUAL "")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing variable 'project_output_fullname'!" )
+    endif()
+    # 2. Install associated export-sets and dependency-loader scripts.
+    foreach (subcomponent IN ITEMS Runtime Development)
+        string( TOUPPER "${subcomponent}" component )
+        if (DEFINED _luchs_${component})
+            install( EXPORT ${project_export_fullname}-${subcomponent}
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
+                FILE        ${project_output_fullname}-${subcomponent}.cmake
+                NAMESPACE   ${project_export_namespace}::
+                COMPONENT   ${project_component_prefix_fullname}-Development  # Always part of the DEVELOPMENT component!
+            )
+            install( FILES "${_luchs_${component}}"
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
+                RENAME      ${project_output_fullname}-${subcomponent}--DepsLoader.cmake
+                COMPONENT   ${project_component_prefix_fullname}-Development  # Always part of the DEVELOPMENT component!
+            )
+        endif()
+    endforeach()
+    if (DEFINED _luchs_PLUGINS)
+        install( EXPORT ${project_export_fullname}-Plugins
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
+            FILE        ${project_output_fullname}-Plugins.cmake
+            NAMESPACE   ${project_export_namespace}::
+            COMPONENT   ${project_component_prefix_fullname}-Plugins
+        )
+        install( FILES "${_luchs_PLUGINS}"
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${project_output_fullname}-${PROJECT_VERSION}
+            RENAME      ${project_output_fullname}-Plugins--DepsLoader.cmake
+            COMPONENT   ${project_component_prefix_fullname}-Plugins
+        )
+    endif()
+endfunction()
