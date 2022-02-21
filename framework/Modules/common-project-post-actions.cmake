@@ -12,6 +12,7 @@
 #              version variable.
 #          * It generates extra project information variables for the currently processed project.
 #          * It sets the default name for "folders" in IDEs for the currently processed project.
+#          * It generates aditional header/source/resource files for the current module.
 #
 
 
@@ -73,3 +74,8 @@ message( DEBUG "--- ${project_namespace} ---\n"
 
 # Initial value for the FOLDER property of targets created by the current project.
 set( CMAKE_FOLDER "${project_folder_fullname}" )
+
+
+# Generate some extra project header / source / resource files.
+include( generate_extra_project_files )
+generate_extra_project_sources()
