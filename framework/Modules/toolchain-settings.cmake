@@ -23,6 +23,23 @@ if (EXISTS "${LUCHS_TEMPLATES_DIR}/custom/toolchain-pre-settings.cmake.in")
 endif()
 
 
+# Load Windows specific settings?
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/windows_specific_settings.cmake" )
+endif()
+
+
+# Use and enforce minimal supported Windows version (on Windows OS)?
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    option( ENFORCE_MINIMAL_SUPPORTED_WINDOWS_VERSION "Enforce a minimal supported Windows version (taken from CMAKE_SYSTEM_VERSION)?" ON )
+    mark_as_advanced( ENFORCE_MINIMAL_SUPPORTED_WINDOWS_VERSION )
+endif()
+if (ENFORCE_MINIMAL_SUPPORTED_WINDOWS_VERSION)
+    generate_and_auto_include_targetver_header()
+    enforce_minimal_supported_windows_version()
+endif()
+
+
 # Load toolchain post-settings?
 if (EXISTS "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in")
     configure_file( "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in"
