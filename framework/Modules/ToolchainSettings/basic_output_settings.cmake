@@ -4,6 +4,7 @@
 #          compiling/linking.
 #          * A macro that sets the file suffixes/prefixes that should be used by default.
 #          * A macro that sets the library postfixes that should be used by default.
+#          * A macro for globally enabling compiling into position-independent code (by default).
 #
 
 
@@ -62,4 +63,14 @@ macro( set_default_library_postfixes )
     set( CMAKE_MINSIZEREL_POSTFIX     "_small" )
     set( CMAKE_RELEASE_POSTFIX        "" )
     set( CMAKE_RELWITHDEBINFO_POSTFIX "" )  # Same postfix as for 'Release'.
+endmacro()
+
+
+##
+# @name enable_position_independent_code()
+# @brief Globally enables compiling into position-independent code (by default).
+#
+macro( enable_position_independent_code )
+    set( CMAKE_POSITION_INDEPENDENT_CODE ON )
+    set( CMAKE_POLICY_DEFAULT_CMP0083    NEW )
 endmacro()
