@@ -3,6 +3,7 @@
 # @details This file defines functions/macros which make basic output-related settings for
 #          compiling/linking.
 #          * A macro that sets the file suffixes/prefixes that should be used by default.
+#          * A macro that sets the library postfixes that should be used by default.
 #
 
 
@@ -49,4 +50,16 @@ macro( set_default_binary_suffixes_and_prefixes )
         message( WARNING "Unknow target-platform ('${CMAKE_SYSTEM_NAME}') and/or compiler ('${CMAKE_CXX_COMPILER_ID}').")
         # Use default file prefixes/suffixes from CMake instead.
     endif()
+endmacro()
+
+
+##
+# @name set_default_library_postfixes()
+# @brief Sets the config-specific postfixes that shall be used for built libraries by default.
+#
+macro( set_default_library_postfixes )
+    set( CMAKE_DEBUG_POSTFIX          "_dbg" )
+    set( CMAKE_MINSIZEREL_POSTFIX     "_small" )
+    set( CMAKE_RELEASE_POSTFIX        "" )
+    set( CMAKE_RELWITHDEBINFO_POSTFIX "" )  # Same postfix as for 'Release'.
 endmacro()
