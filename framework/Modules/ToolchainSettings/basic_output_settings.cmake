@@ -5,6 +5,7 @@
 #          * A macro that sets the file suffixes/prefixes that should be used by default.
 #          * A macro that sets the library postfixes that should be used by default.
 #          * A macro for globally enabling compiling into position-independent code (by default).
+#          * A macro for globally enabling hidden symbol visibility (by default).
 #
 
 
@@ -73,4 +74,16 @@ endmacro()
 macro( enable_position_independent_code )
     set( CMAKE_POSITION_INDEPENDENT_CODE ON )
     set( CMAKE_POLICY_DEFAULT_CMP0083    NEW )
+endmacro()
+
+
+##
+# @name set_default_visibility_to_hidden()
+# @brief Sets the default visibility settings to hidden.
+#
+macro( set_default_visibility_to_hidden )
+    set( CMAKE_CXX_VISIBILITY_PRESET      hidden )
+    set( CMAKE_C_VISIBILITY_PRESET        hidden )
+    set( CMAKE_VISIBILITY_INLINES_HIDDEN  ON )
+    set( CMAKE_POLICY_DEFAULT_CMP0063     NEW )
 endmacro()
