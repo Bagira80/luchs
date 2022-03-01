@@ -27,6 +27,8 @@ endif()
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/windows_specific_settings.cmake" )
 endif()
+# Load basic output-related settings.
+include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/basic_output_settings.cmake" )
 
 
 # Use and enforce minimal supported Windows version (on Windows OS)?
@@ -47,6 +49,23 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 if (USE_UNICODE_CHARSET)
     enable_unicode_charset_globally()
+endif()
+
+
+# Make basic output-related settings.
+set_default_library_postfixes()
+set_default_binary_suffixes_and_prefixes()
+enable_position_independent_code()
+set_default_visibility_to_hidden()
+
+
+# Use default RPATH settings when installing executables/libraries (on Linux OS)?
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    option( USE_DEFAULT_INSTALL_RPATH "Use default RPATH settings when installing executables/libraries." ON )
+    mark_as_advanced( USE_DEFAULT_INSTALL_RPATH )
+endif()
+if (USE_DEFAULT_INSTALL_RPATH)
+    set_default_install_rpath()
 endif()
 
 
