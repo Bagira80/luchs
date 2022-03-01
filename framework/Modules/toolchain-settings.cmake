@@ -31,6 +31,8 @@ endif()
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/basic_output_settings.cmake" )
 # Load programming-language related settings.
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/language_settings.cmake" )
+# Load optimization settings.
+include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/optimization_settings.cmake" )
 
 
 # Use and enforce minimal supported Windows version (on Windows OS)?
@@ -74,6 +76,13 @@ endif()
 # Make programming-language related settings.
 set_minimum_required_cxx_standard()
 set_minimum_required_c_standard()
+
+
+# Enable link-time optimization globally?
+option( ENABLE_LTO "Enable link-time optimization (LTO)." OFF )
+if (ENABLE_LTO)
+    enable_link_time_optimization()
+endif()
 
 
 # Load toolchain post-settings?
