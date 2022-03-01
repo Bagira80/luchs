@@ -29,6 +29,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 # Load basic output-related settings.
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/basic_output_settings.cmake" )
+# Load programming-language related settings.
+include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/language_settings.cmake" )
 
 
 # Use and enforce minimal supported Windows version (on Windows OS)?
@@ -67,6 +69,11 @@ endif()
 if (USE_DEFAULT_INSTALL_RPATH)
     set_default_install_rpath()
 endif()
+
+
+# Make programming-language related settings.
+set_minimum_required_cxx_standard()
+set_minimum_required_c_standard()
 
 
 # Load toolchain post-settings?
