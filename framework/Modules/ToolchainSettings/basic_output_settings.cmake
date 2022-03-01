@@ -6,6 +6,7 @@
 #          * A macro that sets the library postfixes that should be used by default.
 #          * A macro for globally enabling compiling into position-independent code (by default).
 #          * A macro for globally enabling hidden symbol visibility (by default).
+#          * A function which sets the default RPATH that will be set on to-be-installed binaries.
 #
 
 
@@ -87,3 +88,27 @@ macro( set_default_visibility_to_hidden )
     set( CMAKE_VISIBILITY_INLINES_HIDDEN  ON )
     set( CMAKE_POLICY_DEFAULT_CMP0063     NEW )
 endmacro()
+
+
+##
+# @name set_default_install_rpath()
+# @brief Sets the RPATH that shall be used by default when installing executables/libraries.
+# @note Only has impact on Linux!
+#
+function( set_default_install_rpath )
+    # Calculate relative path from ${CMAKE_INSTALL_BINDIR} to ${CMAKE_INSTALL_LIBDIR}.
+    include( GNUInstallDirs )
+    file( RELATIVE_PATH relative_path_to_libdir
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+    )
+    # Use relative RPATH for internal dependencies.
+    list( PREPEND CMAKE_INSTALL_RPATH
+          "$ORIGIN"
+          "$ORIGIN/${relative_path_to_libdir}"
+    )
+    list( REMOVE_DUPLICATES CMAKE_INSTALL_RPATH )
+    set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}" PARENT_SCOPE )
+    # Use absolute RPATH for external dependencies.
+    set( CMAKE_INSTALL_RPATH_USE_LINK_PATH ON PARENT_SCOPE )
+endfunction()
