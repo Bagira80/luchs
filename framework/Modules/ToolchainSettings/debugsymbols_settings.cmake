@@ -2,6 +2,9 @@
 # @file
 # @details This file defines functions which modify creation of debug-symbols.
 #          * A function that disables separate debug-symbols files.
+#          * A function that enables separate debug-symbols files.
+#          * An associated helper function that registers post-build actions for build targets
+#            to create the separate debug-symbols files.
 #
 
 
@@ -41,5 +44,141 @@ function( disable_separate_debugsymbols )
     # Disabling this for an unsupported OS?
     else()
         message( FATAL_ERROR "Disabling separate debug symbols is not supported for the chosen OS/compiler combination!" )
+    endif()
+endfunction()
+
+
+##
+# @name enable_separate_debugsymbols( only_after_linking )
+# @brief Enables and configures creation of debug-symbols in separate files.
+# @param only_after_linking Determines if splitting debug-symbols into separate files only after
+#        linking or already do so when compiling object files.
+# @note The argument must be set to `true` if link-time-optimization is used!
+# @note These are only generated for configurations "Debug" and "RelWithDebInfo".
+#
+function( enable_separate_debugsymbols only_after_linking )
+    # Canonicalize parameter value
+    if (only_after_linking)
+        set( only_after_linking "1" )
+    else ()
+        set( only_after_linking "0" )
+    endif()
+
+    # Enabling this for Windows?
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+
+        # Note: Enabling separate debug symbol files (*.pdb) for MSVC (or Clang-cl) is simple, as
+        #       this seems to be the only way to generate (usable) debug symbols. And it is enabled
+        #       by default.
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
+           (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
+            # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
+            #       by CMake in Debug or RelWithDebInfo configurations.
+            #add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+        elseif (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND
+                CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+            # Note: This seems to work out of the box.
+        else()
+            message( FATAL_ERROR "Enabling separate debug symbols (for C++) is not supported for the chosen OS/compiler combination!" )
+        endif()
+        if (CMAKE_C_COMPILER_ID STREQUAL "MSVC" OR
+           (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
+            # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
+            #       by CMake in Debug or RelWithDebInfo configurations.
+            #add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+        elseif (CMAKE_C_SIMULATE_ID STREQUAL "MSVC" AND
+                CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+            # Note: This seems to work out of the box.
+        else()
+            message( FATAL_ERROR "Enabling separate debug symbols (for C) is not supported for the chosen OS/compiler combination!" )
+        endif()
+
+    # Enabling this for Linux (if not cross-compiling)?
+    elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+
+        # WARNING: Due to current bugs in tool `dwp` we currently can only split after linking, not earlier!
+        set( only_after_linking "1" )
+
+        # Enable splitting debug information into separate `*.dwo` files.
+        # Note: This does not work if LTO is enabled.
+        if (NOT only_after_linking)
+            # Note: Make sure the option is prepended to other "-g.*" options.
+            # Sadly, this does not work!
+            #add_compile_options( BEFORE $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gsplit-dwarf>
+            #                            $<$<AND:$<C_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gsplit-dwarf> )
+            # Alternative:
+            get_directory_property( prop COMPILE_OPTIONS )
+            list( PREPEND prop "$<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gsplit-dwarf>"
+                               "$<$<AND:$<C_COMPILER_ID:GNU,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:-gsplit-dwarf>" )
+            set_directory_properties( PROPERTIES COMPILE_OPTIONS "${prop}" )
+        endif()
+        # In order to also create the `*.dwp` files we create a script that needs to be run after linking.
+        set( script_content [==[#!/bin/sh
+            BINARY_FILE_DIR=$(dirname "$1")
+            BINARY_FILE_NAME=$(basename "$1")
+            BINARY_FILE_PATH="$1"
+            BASE_BUILD_DIR="@CMAKE_BINARY_DIR@"
+            NOT_IGNORED="$2"
+            if [ "$NOT_IGNORED" -eq "1" ] ; then
+                # Compiled with -gsplit-dwarf option?
+                if [ "@only_after_linking@" -eq "1" ] ; then
+                    @CMAKE_OBJCOPY@ --only-keep-debug "${BINARY_FILE_PATH}" "${BINARY_FILE_PATH}.dwp"
+                    @CMAKE_OBJCOPY@ --strip-debug "${BINARY_FILE_PATH}"
+                    cd "${BINARY_FILE_DIR}"
+                    @CMAKE_OBJCOPY@ --add-gnu-debuglink="${BINARY_FILE_NAME}.dwp" "${BINARY_FILE_NAME}"
+                else
+                    cd "${BASE_BUILD_DIR}"
+                    dwp -e "${BINARY_FILE_PATH}"
+                fi
+            fi
+        ]==])
+        # Generate that script in the global scripts directory and set appropriate permissions.
+        file( CONFIGURE OUTPUT "${LUCHS_BINARY_DIR}/create_separate_debugsymbols_file.sh"
+            CONTENT "${script_content}" @ONLY NEWLINE_STYLE UNIX
+        )
+        file( CHMOD "${LUCHS_BINARY_DIR}/create_separate_debugsymbols_file.sh"
+            PERMISSIONS
+                OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                WORLD_READ
+        )
+
+    # Enabling this for Linux (if cross-compiling)?
+    elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        message( FATAL_ERROR "Enabling separate debug symbols is not supported when cross-compiling for Linux!" )
+    # Enabling this for an unsupported OS?
+    else()
+        message( FATAL_ERROR "Enabling separate debug symbols is not supported for the chosen OS/compiler combination!" )
+    endif()
+endfunction()
+
+
+##
+# @name create_separate_debugsymbols_file( target )
+# @brief Registers a post-build action for the given `target` to create a separate debug-symbols file.
+# @param target The target for which a separate debug-symbols file shall be created.
+# @note This is an accompanying helper-function for enabling separate debug-symbols.
+#
+function( create_separate_debugsymbols_file target )
+    set( function_name "create_separate_debugsymbols_file" )
+    if (NOT TARGET ${target})
+        message( FATAL_ERROR "${function_name}: Cannot register post-build action for unknown target '${target}'." )
+    endif()
+    if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        if (NOT EXISTS "${LUCHS_BINARY_DIR}/create_separate_debugsymbols_file.sh")
+            message( FATAL_ERROR "${function_name}: Missing post-build action script. (Did you forget to call 'enable_separate_debugsymbols' before?)" )
+        endif()
+        # Resolve alias target to its real target.
+        get_target_property( real_target ${target} ALIASED_TARGET )
+        if (NOT real_target)
+            set( real_target "${target}" )
+        endif()
+        # Add custom command to create a separate debug-symbols file.
+        add_custom_command( TARGET ${real_target} POST_BUILD
+            COMMAND "${LUCHS_BINARY_DIR}/create_separate_debugsymbols_file.sh"
+                    "$<TARGET_FILE:${target}>"
+                    "$<CONFIG:Debug,RelWithDebInfo>"
+            COMMENT "Creating separate file with debug-symbols for $<TARGET_NAME:${target}>."
+        )
     endif()
 endfunction()
