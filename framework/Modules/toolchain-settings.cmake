@@ -33,6 +33,8 @@ include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/basic_output_settings.cmak
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/language_settings.cmake" )
 # Load optimization settings.
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/optimization_settings.cmake" )
+# Load debug-symbols related settings.
+include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/debugsymbols_settings.cmake")
 
 
 # Use and enforce minimal supported Windows version (on Windows OS)?
@@ -82,6 +84,21 @@ set_minimum_required_c_standard()
 option( ENABLE_LTO "Enable link-time optimization (LTO)." OFF )
 if (ENABLE_LTO)
     enable_link_time_optimization()
+endif()
+
+
+# Enable creating separate debug symbols (globally)?
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    option( ENABLE_SEPARATE_DEBUGSYMBOLS "Enable separate debug-symbols." ON )
+else()
+    option( ENABLE_SEPARATE_DEBUGSYMBOLS "Enable separate debug-symbols." OFF )
+endif()
+mark_as_advanced( ENABLE_SEPARATE_DEBUGSYMBOLS )
+if (ENABLE_SEPARATE_DEBUGSYMBOLS)
+    # Note: Will use special handling if LTO is enabled.
+    enable_separate_debugsymbols( ${ENABLE_LTO} )
+else()
+    disable_separate_debugsymbols()
 endif()
 
 
