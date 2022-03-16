@@ -230,3 +230,20 @@ function( create_separate_debugsymbols_file target )
         )
     endif()
 endfunction()
+
+
+##
+# @name remove_fullpath_to_pdb_from_dll_and_exe()
+# @brief Only stores the name to the associated PDB file instead of the full filepath in DLL/EXE.
+# @note This only has any effect when compiling with MSVC or a compiler simulating MSVC.
+#
+function( remove_fullpath_to_pdb_from_dll_and_exe )
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+        if (NOT CMAKE_GENERATOR MATCHES "Visual Studio.*")
+            add_link_options( "$<$<AND:$<OR:$<CXX_COMPILER_ID:MSVC,Clang>,$<STREQUAL:${CMAKE_CXX_SIMULATE_ID},MSVC>>,$<CONFIG:Debug,RelWithDebInfo>>:LINKER:/PDBALTPATH:%_PDB%>" )
+            add_link_options( "$<$<AND:$<OR:$<C_COMPILER_ID:MSVC,Clang>,$<STREQUAL:${CMAKE_C_SIMULATE_ID},MSVC>>,$<CONFIG:Debug,RelWithDebInfo>>:LINKER:/PDBALTPATH:%_PDB%>" )
+        else()
+            message( DEBUG "Visual Studio generators cannot set /PDBALTPATH:<percent>_PDB<percent> linker options properly. (The common, global MSBuild property file needs to be used instead!)" )
+        endif()
+    endif()
+endfunction()
