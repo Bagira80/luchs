@@ -10,9 +10,17 @@
 
   <!-- Properties switches set by 'luchs'. -->
   <PropertyGroup>
+    <UsePDBALTPATH>$<IF:$<BOOL:${ENABLE_REMOVING_FULLPATH_TO_PDB_FROM_DLL_AND_EXE}>,true,false></UsePDBALTPATH>
   </PropertyGroup>
 
 
   <!-- Further settings set by 'luchs. -->
+
+  <!-- The /PDBALTPATH option has the effect that only the PDB file name will be store in the associated DLL/EXE, not the full path. -->
+  <ItemDefinitionGroup  Condition="'$(UsePDBALTPATH)'== 'true' and ('$(Configuration)'=='Debug' or '$(Configuration)'=='RelWithDebInfo')">
+    <Link>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
 
 </Project>

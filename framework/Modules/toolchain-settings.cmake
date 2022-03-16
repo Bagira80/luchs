@@ -116,6 +116,15 @@ if (ENABLE_EDIT_AND_CONTINUE_DEBUGGING AND NOT ENABLE_SEPARATE_DEBUGSYMBOLS)
 endif()
 
 
+# Enable removing the fullpath to PDB files from DLL and EXE?
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    option( ENABLE_REMOVING_FULLPATH_TO_PDB_FROM_DLL_AND_EXE "Remove the fullpath to the associated debug-symbols file (*.pdb) from DLL and EXE files and only embed filename?" ON )
+endif()
+if (ENABLE_REMOVING_FULLPATH_TO_PDB_FROM_DLL_AND_EXE)
+    remove_fullpath_to_pdb_from_dll_and_exe()
+endif()
+
+
 # Generate property files for MSBuild / Visual Studio?
 if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
     # Generate global property files.
