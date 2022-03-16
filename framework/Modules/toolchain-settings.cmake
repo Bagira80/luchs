@@ -27,6 +27,10 @@ endif()
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/windows_specific_settings.cmake" )
 endif()
+# Load Visual Studio specific settings?
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+    include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/vs_specific_settings.cmake" )
+endif()
 # Load basic output-related settings.
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/basic_output_settings.cmake" )
 # Load programming-language related settings.
@@ -109,6 +113,21 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 if (ENABLE_EDIT_AND_CONTINUE_DEBUGGING AND NOT ENABLE_SEPARATE_DEBUGSYMBOLS)
     message( WARNING "Cannot use Edit-and-Continue feature if separate debug-symbols are disabled!" )
+endif()
+
+
+# Generate property files for MSBuild / Visual Studio?
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+    # Generate global property files.
+    # - the entry property file (`DirectoryBuild.props`)
+    generate_entry_property_file()
+    # - for specific programming languages.
+    if (DEFINED CMAKE_CXX_COMPILER)
+        generate_cxx_property_file()
+    endif()
+    if (DEFINED CMAKE_CSharp_COMPILER)
+        generate_csharp_property_file()
+    endif()
 endif()
 
 
