@@ -1,0 +1,20 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- C++-only property sheet -->
+    <ForceImportAfterCppProps Condition="exists('$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.Cpp.props')">$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.Cpp.props</ForceImportAfterCppProps>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vbproj'">
+    <!-- VB-only property sheet -->
+    <Import Condition="exists('$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.VisualBasic.props')">$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.VisualBasic.props</Import>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
+    <!-- F#-only property sheet -->
+    <Import Condition="exists('$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.FSharp.props')">$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.FSharp.props</Import>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <!-- C#-only property sheet -->
+    <Import Condition="exists('$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.CSharp.props')">$(MsbuildThisFileDirectory)\luchs.MSBuild.Props\General.CSharp.props</Import>
+  </PropertyGroup>
+  <!-- Load possibly existing property sheet in a directory above this one -->
+  <Import Condition="exists('$(MsbuildThisFileDirectory)\..\Directory.Build.props')" Project="$(MsbuildThisFileDirectory)\..\Directory.Build.props" />
+</Project>
