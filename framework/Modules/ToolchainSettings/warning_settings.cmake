@@ -3,6 +3,8 @@
 # @details This file defines functions which enable different warnings and (might treat them as
 #          errors).
 #          * A function that enables (pedantic) compiler warnings and treats them as errors.
+#          * A function that again disables some specific compiler warnings because they might be
+#            problematic.
 #
 
 
@@ -51,5 +53,50 @@ function( enable_default_compiler_warnings_as_errors )
         add_compile_options( $<${IF_CXX_GNU_FRONTEND}:-Wall$<SEMICOLON>-Werror=all> )
         add_compile_options( $<${IF_CXX_GNU_FRONTEND}:-Wextra$<SEMICOLON>-Werror=extra> )
         add_compile_options( $<${IF_CXX_MSVC_FRONTEND}:/W4$<SEMICOLON>/WX> )
+    endif()
+endfunction()
+
+
+##
+# @name disable_problematic_compiler_warnings( [LANGUAGES <lang> [<lang>...]])
+# @brief Disables some problematic compiler warnings and no longer treats them as compiler errors.
+# @param LANGUAGES The list of programming languages for which some problematic warnings will be
+#        disabled (and no longer treated as errors). If not given defaults to C and C++.
+#
+function( disable_problematic_compiler_warnings )
+    set( function "disable_problematic_compiler_warnings" )
+    set( supported_languages "C;CXX" )
+    cmake_parse_arguments(
+        "_luchs"
+        ""
+        ""
+        "LANGUAGES"
+        ${ARGN} )
+    # 1. Some sanity checks.
+    if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
+        message( SEND_ERROR "${function}: Missing languages for option 'LANGUAGES'." )
+    elseif (DEFINED _luchs_LANGUAGES)
+        foreach( lang IN LISTS _luchs_LANGUAGES )
+            if (NOT ${lang} IN_LIST supported_languages)
+                message( SEND_ERROR "${function}: Cannot disable warnings for unsupported language '${lang}'." )
+            endif()
+        endforeach()
+    endif()
+    # 2. Use default languages if none given.
+    if (NOT DEFINED _luchs_LANGUAGES)
+        set( _luchs_LANGUAGES "C;CXX" )  # Enable for C and C++ by default!
+    endif()
+    # 3. Disable some specific warnings again (and not longer treat them as errors) for the given languages.
+    set( IF_C_GNU_FRONTEND    "$<AND:$<COMPILE_LANG_AND_ID:C,GNU,Clang>,$<OR:$<STREQUAL:${CMAKE_C_COMPILER_FRONTEND_VARIANT},GNU>,$<STREQUAL:x${CMAKE_C_COMPILER_FRONTEND_VARIANT},x>>>" )
+    set( IF_CXX_GNU_FRONTEND  "$<AND:$<COMPILE_LANG_AND_ID:C,GNU,Clang>,$<OR:$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},GNU>,$<STREQUAL:x${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},x>>>" )
+    set( IF_C_MSVC_FRONTEND   "$<AND:$<COMPILE_LANG_AND_ID:C,MSVC,Clang>,$<OR:$<STREQUAL:${CMAKE_C_COMPILER_FRONTEND_VARIANT},MSVC>,$<STREQUAL:x${CMAKE_C_COMPILER_FRONTEND_VARIANT},x>>>" )
+    set( IF_CXX_MSVC_FRONTEND "$<AND:$<COMPILE_LANG_AND_ID:CXX,MSVC,Clang>,$<OR:$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},MSVC>,$<STREQUAL:x${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},x>>>" )
+    if (C IN_LIST _luchs_LANGUAGES)
+        add_compile_options( $<${IF_C_GNU_FRONTEND}:-Wno-unknown-pragmas$<SEMICOLON>-Wno-error=unknown-pragmas> )
+        add_compile_options( $<${IF_C_GNU_FRONTEND}:-Wno-unused-result$<SEMICOLON>-Wno-error=unused-result> )
+    endif()
+    if (CXX IN_LIST _luchs_LANGUAGES)
+        add_compile_options( $<${IF_CXX_GNU_FRONTEND}:-Wno-unknown-pragmas$<SEMICOLON>-Wno-error=unknown-pragmas> )
+        add_compile_options( $<${IF_CXX_GNU_FRONTEND}:-Wno-unused-result$<SEMICOLON>-Wno-error=unused-result> )
     endif()
 endfunction()
