@@ -41,6 +41,8 @@ include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/optimization_settings.cmak
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/debugsymbols_settings.cmake")
 # Load warning related settings.
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/warning_settings.cmake")
+# Load profiling related settings.
+include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/profiling_settings.cmake")
 
 
 # Use and enforce minimal supported Windows version (on Windows OS)?
@@ -131,6 +133,14 @@ endif()
 enable_default_compiler_warnings_as_errors( LANGUAGES C CXX )
 enable_default_linker_warnings_as_errors( LANGUAGES C CXX )
 disable_problematic_compiler_warnings( LANGUAGES C CXX )
+
+
+# Enable time-trace profiling when building.
+option( ENABLE_BUILDING_WITH_TIME_TRACE_PROFILING "Enable 'time-trace' profiling to generate time tracing .json files." OFF )
+mark_as_advanced( ENABLE_BUILDING_WITH_TIME_TRACE_PROFILING )
+if (ENABLE_BUILDING_WITH_TIME_TRACE_PROFILING)
+    enable_building_with_time_trace_profiling( LANGUAGES C CXX )
+endif()
 
 
 # Generate property files for MSBuild / Visual Studio?
