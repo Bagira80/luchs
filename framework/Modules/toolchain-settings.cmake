@@ -39,6 +39,8 @@ include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/language_settings.cmake" )
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/optimization_settings.cmake" )
 # Load debug-symbols related settings.
 include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/debugsymbols_settings.cmake")
+# Load warning related settings.
+include( "${CMAKE_CURRENT_LIST_DIR}/ToolchainSettings/warning_settings.cmake")
 
 
 # Use and enforce minimal supported Windows version (on Windows OS)?
@@ -123,6 +125,12 @@ endif()
 if (ENABLE_REMOVING_FULLPATH_TO_PDB_FROM_DLL_AND_EXE)
     remove_fullpath_to_pdb_from_dll_and_exe()
 endif()
+
+
+# Enable default set of warnings and treat them as errors.
+enable_default_compiler_warnings_as_errors( LANGUAGES C CXX )
+enable_default_linker_warnings_as_errors( LANGUAGES C CXX )
+disable_problematic_compiler_warnings( LANGUAGES C CXX )
 
 
 # Generate property files for MSBuild / Visual Studio?
