@@ -5,6 +5,9 @@
 #          * It loads the CTest module (and thereby creates a CMake option `BUILD_TESTING`).
 #          * It sets the MSVC runtime to link against by default on Windows (if not set already).
 #          * It sets up the compiler.
+#          * It sets up options for enabling different sanitizers and a target `sanitizers` to
+#            which other targets need to declare a dependency (via `target_link_libraries`) in
+#            order to be compiled with sanitizers support.
 #
 
 # This file may only be called once and that should be after the top-level `project` command.
@@ -29,3 +32,7 @@ endif()
 
 # Load and make some compiler-preparations.
 include( "${CMAKE_CURRENT_LIST_DIR}/toolchain-settings.cmake" )
+
+
+# Provide options and target for sanitizers.
+include( Sanitizers )
