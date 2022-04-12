@@ -3,6 +3,7 @@
 # @note This file must be included (indirectly) after the top-level `project` command is called.
 # @details This file contains different settings for the top-level CMakeLists.txt file.
 #          * It loads the CTest module (and thereby creates a CMake option `BUILD_TESTING`).
+#          * It sets the MSVC runtime to link against by default on Windows (if not set already).
 #          * It sets up the compiler.
 #
 
@@ -17,6 +18,13 @@ endif()
 
 # Enable support for CTest (and thereby automatically get the `BUILD_TESTING` option).
 include( CTest )
+
+
+# Are we building for Windows but have not already determined which MSVC runtime library to use by default?
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+    # In that case use the dynamic MSVC runtime by default.
+    set( CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" )
+endif()
 
 
 # Load and make some compiler-preparations.
