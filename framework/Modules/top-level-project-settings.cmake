@@ -36,3 +36,13 @@ include( "${CMAKE_CURRENT_LIST_DIR}/toolchain-settings.cmake" )
 
 # Provide options and target for sanitizers.
 include( Sanitizers )
+
+
+# Create a target for generating API documentation.
+if (NOT TARGET apidoc)
+    include( create_apidoc_target )
+    create_apidoc_target( TARGET_NAME apidoc )
+    if (NOT TARGET apidoc)
+        message( DEBUG "Unable to find Doxygen. Therefore no `apidoc` target will be created." )
+    endif()
+endif()
