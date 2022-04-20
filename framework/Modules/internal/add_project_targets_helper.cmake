@@ -68,22 +68,41 @@ function( luchs_internal__add_project_targets__common_setting caller target alia
 
     # Load the list of private/public source files of the target.
     load_project_sources( ${target} )
-    # Add the list of source-files to the target.
-    # Note: "Public" sources will still only be added as private build-sources!
-    #       We assume that no other target which later depends on `target` wants to compile the
-    #       public sources again and therefore does not need to inherit these. Instead, it should
-    #       inherit the include search path of `target`. (But that is not handled here.)
+    # Add the list of private sources to the target. (Public sources will be added later.)
     target_sources( ${target}
-        PRIVATE ${private_sources} ${public_sources}
+        PRIVATE ${private_sources}
     )
-    # Add default (public) include search paths.
-    target_include_directories( ${target}
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-    )
+
+    # Add the list of public sources (aka headers) to the target and set include search paths appropriately.
+    # Note: Use "file sets" if available!
+    if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
+        target_sources( ${target}
+            PUBLIC FILE_SET HEADERS
+                BASE_DIRS
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include
+                    ${CMAKE_CURRENT_BINARY_DIR}/include
+                    ${PROJECT_SOURCE_DIR}/include
+                    ${PROJECT_BINARY_DIR}/include
+                FILES
+                    ${public_sources}
+        )
+    else()
+        # Note: "Public" sources will still only be added as private build-sources!
+        #       We assume that no other target which later depends on `target` wants to compile the
+        #       public sources again and therefore does not need to inherit these. Instead, it should
+        #       inherit the include search path of `target`. (But that is not handled here.)
+        target_sources( ${target}
+            PRIVATE ${public_sources}
+        )
+        # Add default include search paths for public sources.
+        target_include_directories( ${target}
+            PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+                $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+        )
+    endif()
 
     # Special handling for specific callers.
     if (CMAKE_CURRENT_FUNCTION STREQUAL "add_project_test")
