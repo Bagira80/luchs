@@ -102,3 +102,64 @@ function( luchs_internal__add_project_targets__common_setting caller target alia
         )
     endif()
 endfunction()
+
+
+##
+# @name luchs_internal__add_project_test__get_test_framework_targets( test_framework )
+# @brief Retrieves the list of targets to link to in order to use the given test-framework.
+# @param test_framework The name of the test-framework whose link-targets shall be returned.
+# @note May only be called from `add_project_test`.
+# @note The list of targets to link to will be returned in variable `TEST_FRAMEWORK_LINK_TARGETS`.
+# @note It is the callers responsibility to make sure that the returned link-targets are already
+#       defined!
+#
+macro( luchs_internal__add_project_test__get_test_framework_targets test_framework )
+    # Directory with test-framework helper scripts.
+    # Note: This directory is a subdirectory of the directory containing the `add_project_test` function!
+    set( testFrameworksDir "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/TestFrameworks" )
+
+    if (NOT EXISTS "${testFrameworksDir}/GetLinkTargets_${test_framework}.cmake")
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Unsupported test-framework '${test_framework}'." )
+    else()
+        # Load script which sets the variable TEST_FRAMEWORK_LINK_TARGETS to the list of link-targets.
+        include( "${testFrameworksDir}/GetLinkTargets_${test_framework}.cmake" )
+    endif()
+endmacro()
+
+
+##
+# @name luchs_internal__add_project_test__add_discoverable_tests( test_framework target [options...] )
+# @brief Register discoverable tests from the given target.
+# @param test_framework The name of the test-framework to be used for discovering tests.
+# @param target The target for which discoverable tests will be registered.
+# @param options... Further options that shall be used when discovering tests.
+# @note May only be called from `add_project_test`.
+#
+function( luchs_internal__add_project_test__add_discoverable_tests test_framework target )
+    set( CMAKE_CURRENT_FUNCTION "add_project_test" )  # Make the current function transparent.
+    cmake_parse_arguments(
+         "_luchs"
+         ""
+         "WORKING_DIRECTORY;TEST_PREFIX;TEST_SUFFIX"
+         ""
+         ${ARGN}
+    )
+
+    # Directory with test-framework helper scripts.
+    # Note: This directory is a subdirectory of the directory containing the `add_project_test` function!
+    set( testFrameworksDir "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../TestFrameworks" )
+
+    if (NOT EXISTS "${testFrameworksDir}/AddDiscoverableTests_${test_framework}.cmake")
+        message( "NOT EXISTS ${testFrameworksDir}/AddDiscoverableTests_${test_framework}.cmake" )
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Unsupported test-framework '${test_framework}'." )
+    else()
+        # Load script which registers the given target with discoverable tests
+        # using the given test-framework (but set required options beforehand).
+        set( ADD_DISCOVERABLE_TESTS_TARGET             ${target} )
+        set( ADD_DISCOVERABLE_TESTS_WORKING_DIRECTORY  ${_luchs_WORKING_DIRECTORY} )
+        set( ADD_DISCOVERABLE_TESTS_TEST_PREFIX        ${_luchs_TEST_PREFIX} )
+        set( ADD_DISCOVERABLE_TESTS_TEST_SUFFIX        ${_luchs_TEST_SUFFIX} )
+        set( ADD_DISCOVERABLE_TESTS_ADDITIONAL_OPTIONS ${_luchs_UNPARSED_ARGUMENTS} )
+        include( "${testFrameworksDir}/AddDiscoverableTests_${test_framework}.cmake" )
+    endif()
+endfunction()

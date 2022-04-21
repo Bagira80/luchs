@@ -122,40 +122,61 @@ endfunction()
 
 
 ##
-# @name add_project_test( name [DISPLAYED_TEST_ID] )
+# @name add_project_test( name [NO_SEPARATE_TEST_RUNS] [DISPLAYED_TEST_ID] [TEST_FRAMEWORK NONE|<test-framework>] )
 # @brief Creates a new test target with the given name and some default settings.
 # @details Creates a new test target with the given name and an alias for that executable target.
 #          If the name equals `${PROJECT_NAME}` the alias will be `${project_export_fullname}`. If
 #          the name instead equals `${PROJECT_NAME}-<basename>` the alias will be
 #          `${project_export_fullname}::<basename>`.  
-#          Additionally it sets some include search-paths for that target and sets its
-#          `PROJECT_LABEL` property to a sensible value.
+#          Additionally it sets some include search-paths for that target, sets its
+#          `PROJECT_LABEL` property to a sensible value and potentially declares a dependency on
+#          some test-framework (e.g. GoogleTest).
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
+# @param NO_SEPARATE_TEST_RUNS Determines that individual tests of that target shall not be run
+#        individually by CTest, but the entire test-executable with all tests should be run as a
+#        whole instead. (Note, that running tests separately is only supported if using one of the
+#        supported test-frameworks.)
 # @param DISPLAYED_TEST_ID The additional identifier which will be displayed when running the
 #        test. (It is helpful for grouping.) If not given it defaults to the number `1´.
+# @param TEST_FRAMEWORK The name of the test-framework to use (and to declare a dependency
+#        against). If not given, the value of the variable `LUCHS_DEFAULT_TEST_FRAMEWORK` is taken
+#        instead, if it is set. The value `NONE` describes the absence of any test-framework.
 # @note The variables `PROJECT_NAME`, `project_export_fullname`, `PROJECT_SOURCE_DIR` and
 #       `PROJECT_BINARY_DIR` need to be defined!
 # @note Therefore the `project` command and its pre-action should have been called before.
+# @note The variable `LUCHS_DEFAULT_TEST_FRAMEWORK` determines which test-framework to use by
+#       default if option `TEST_FRAMEWORK` is omitted.
 #
 function( add_project_test name )
     cmake_parse_arguments(
          "_luchs"
-         ""
-         "DISPLAYED_TEST_ID"
+         "NO_SEPARATE_TEST_RUNS"
+         "DISPLAYED_TEST_ID;TEST_FRAMEWORK"
          ""
          ${ARGN}
     )
     # Some sanity checks.
     luchs_internal__add_project_targets__sanity_checks( ${CMAKE_CURRENT_FUNCTION} ${name} )
 
-    # Check if option DISPLAYED_TEST_ID was given without any value.
+    # Check if any option was given without value.
     if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
-        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Given option 'DISPLAYED_TEST_ID' is missing its value!" )
+        foreach( keyword IN LISTS _luchs_KEYWORDS_MISSING_VALUES )
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments of '${keyword}'!" )
+        endforeach()
     endif()
 
     # Set default value for DISPLAYED_TEST_ID option?
     if (NOT DEFINED _luchs_DISPLAYED_TEST_ID OR "${_luchs_DISPLAYED_TEST_ID}" STREQUAL "")
         set( _luchs_DISPLAYED_TEST_ID "1" )
+    endif()
+
+    # Set default value for TEST_FRAMEWORK option?
+    if (NOT DEFINED _luchs_TEST_FRAMEWORK)
+        if (DEFINED LUCHS_DEFAULT_TEST_FRAMEWORK)
+            set( _luchs_TEST_FRAMEWORK "${LUCHS_DEFAULT_TEST_FRAMEWORK}" )
+        else()
+            set( _luchs_TEST_FRAMEWORK "NONE" )
+        endif()
     endif()
 
     # Create test target.
@@ -165,9 +186,31 @@ function( add_project_test name )
     # Make common settings on that target.
     luchs_internal__add_project_targets__common_setting( ${CMAKE_CURRENT_FUNCTION} ${name} ${target_name_with_namespace} )
 
+    # Determine the list of test-framework targets to which a dependency must be declared and link to them.
+    # Note: If the test-framework dependency has not been loaded already this will probably fail!
+    if (NOT _luchs_TEST_FRAMEWORK STREQUAL "NONE")
+        # Get list of test-framework targets in variable TEST_FRAMEWORK_LINK_TARGETS.
+        luchs_internal__add_project_test__get_test_framework_targets( ${_luchs_TEST_FRAMEWORK} )
+        target_link_libraries( ${name}
+            PRIVATE
+               ${TEST_FRAMEWORK_LINK_TARGETS}
+        )
+    endif()
+
     # Register the test target as new test.
-    add_test( NAME "${project_export_fullname}::test_${_luchs_DISPLAYED_TEST_ID}{ ${name} }"
-        COMMAND ${name}
-        WORKING_DIRECTORY "$<TARGET_FILE_DIR:${name}>"
-    )
+    if (_luchs_NO_SEPARATE_TEST_RUNS OR _luchs_TEST_FRAMEWORK STREQUAL "NONE")
+        add_test( NAME "${project_export_namespace}::test_${_luchs_DISPLAYED_TEST_ID}{ ${name} }"
+            WORKING_DIRECTORY "$<TARGET_FILE_DIR:${name}>"
+            COMMAND ${name}
+            ${_luchs_UNPARSED_ARGUMENTS}
+        )
+    else()
+        luchs_internal__add_project_test__add_discoverable_tests( ${_luchs_TEST_FRAMEWORK}
+            ${name}
+            WORKING_DIRECTORY "$<TARGET_FILE_DIR:${name}>"
+            TEST_PREFIX "${project_export_namespace}::test_${_luchs_DISPLAYED_TEST_ID}{ "
+            TEST_SUFFIX " }"
+            ${_luchs_UNPARSED_ARGUMENTS}
+        )
+    endif()
 endfunction()
