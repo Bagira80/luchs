@@ -376,3 +376,77 @@ function( install_project_debugsymbols )  # targets...
         OPTIONAL  # Possibly some debug-symbols files do not exist.
     )
 endfunction()
+
+
+##
+# @name install_project_grouppackageconfig( name [COMPATIBILITY <mode>] [VERSION <version>] )
+# @brief Installs a package-config file for the group-package with the given name.
+# @details A package-config file for the group-package with the given name will be generated under
+#          the name `${name}Config.cmake` and installed at `<prefix>/lib/cmake/${name}-<version>`.  
+#          It contains the logic to find all the package-config files for its bundled components.
+#          Those come from all the other projects that bundle themselves with the group-package of
+#          the given `name`.
+# @param name The name of the group-package for which a package-config file will be installed.
+# @param COMPATIBILITY Determines the version-compatibility mode. Must be one of `AnyNewerVersion`,
+#        `SameMajorVersion`, `SameMinorVersion` or `ExactVersion`. Defaults to `SameMajorVersion`.
+# @param VERSION Determines the version of the group-package. Defaults to `${PROJECT_VERSION}`.
+# @note This will be associated with the "DEVELOPMENT" install-component of the current project.
+# @note This function must be called before the install-functions of any of the bundled components
+#       because this function registers it at some global property
+#       (`LUCHS_REGISTRY_GROUP_PACKAGES`) which needs to be accessed by the bundled components when
+#       installing.
+#
+function( install_project_grouppackageconfig name )
+    cmake_parse_arguments( _luchs
+        ""
+        "COMPATIBILITY;VERSION"
+        ""
+        ${ARGN}
+    )
+    # 1. Some sanity checks.
+    if (DEFINED _luchs_KEYWORDS_MISSING_VALUES)
+        foreach( keyword IN LISTS _luchs_KEYWORDS_MISSING_VALUES )
+            message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing argument for '${keyword}'!" )
+        endforeach()
+    endif()
+    if (NOT DEFINED _luchs_VERSION OR _luchs_VERSION STREQUAL "")
+        set( _luchs_VERSION "${PROJECT_VERSION}" )
+    endif()
+    if (NOT DEFINED _luchs_COMPATIBILITY)
+        set( _luchs_COMPATIBILITY "SameMajorVersion" )
+    elseif (NOT _luchs_COMPATIBILITY MATCHES "^(AnyNewer|SameMajor|SameMinor|Exact)Version$" )
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Invalid argument for 'COMPATIBILITY' option! (Only valid "
+                            "values are: AnyNewerVersion, SameMajorVersion, SameMinorVersion, ExactVersion)" )
+    endif()
+    # 1. Generate the package-config for the group-package.
+    # Note: This requires the variable `PackageName` to contain the name of the root-package!
+    set( PackageName "${name}" )
+    configure_file(
+        "${LUCHS_TEMPLATES_DIR}/PackageRoot_ImportFile.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${name}-${_luchs_VERSION}.Config.cmake"
+        @ONLY
+    )
+    # 2. Install the generated package-config for the group-package.
+    install( FILES "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${name}-${_luchs_VERSION}.Config.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}-${_luchs_VERSION}
+        RENAME      ${name}Config.cmake
+        COMPONENT   ${project_component_prefix_fullname}-Development
+    )
+    # 3. Generate and install the associated package-config-version file.
+    include( CMakePackageConfigHelpers )
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${name}-${_luchs_VERSION}.ConfigVersion.cmake"
+        VERSION       ${_luchs_VERSION}
+        COMPATIBILITY ${_luchs_COMPATIBILITY}
+    )
+    install( FILES "${CMAKE_CURRENT_BINARY_DIR}/_luchs/${name}-${_luchs_VERSION}.ConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}-${_luchs_VERSION}
+        RENAME      ${name}ConfigVersion.cmake
+        COMPONENT   ${project_component_prefix_fullname}-Development
+    )
+    # 4. Globally register this group-package's name and version.
+    set_property( GLOBAL APPEND PROPERTY
+        LUCHS_REGISTRY_GROUP_PACKAGES
+        "${name}=${_luchs_VERSION}"
+    )
+endfunction()
