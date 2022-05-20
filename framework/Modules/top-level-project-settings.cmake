@@ -46,3 +46,17 @@ if (NOT TARGET apidoc)
         message( DEBUG "Unable to find Doxygen. Therefore no `apidoc` target will be created." )
     endif()
 endif()
+
+
+# Add support for meta install-components (for conveniently installing multiple components)?
+option( USE_META_INSTALL_COMPONENTS "Add support for meta install-components (\"RUNTIME\", \"DEVELOPMENT\", \"PLUGINS\", \"DEBUGSYMBOLS\")?" ON )
+mark_as_advanced( USE_META_INSTALL_COMPONENTS )
+if (USE_META_INSTALL_COMPONENTS)
+    configure_file( "${LUCHS_TEMPLATES_DIR}/cmake_install.MetaComponents.cmake.in"
+                    "${CMAKE_CURRENT_BINARY_DIR}/_luchs/cmake_install.MetaComponents.cmake"
+                    @ONLY )
+    install( SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/_luchs/cmake_install.MetaComponents.cmake" EXCLUDE_FROM_ALL COMPONENT RUNTIME )
+    install( SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/_luchs/cmake_install.MetaComponents.cmake" EXCLUDE_FROM_ALL COMPONENT DEVELOPMENT )
+    install( SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/_luchs/cmake_install.MetaComponents.cmake" EXCLUDE_FROM_ALL COMPONENT PLUGINS )
+    install( SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/_luchs/cmake_install.MetaComponents.cmake" EXCLUDE_FROM_ALL COMPONENT DEBUGSYMBOLS )
+endif()
