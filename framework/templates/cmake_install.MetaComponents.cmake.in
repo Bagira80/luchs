@@ -1,0 +1,91 @@
+##
+# @file
+# @brief Extracts install-components associated with the current meta install-component and installs these.
+# @note This (CMake-)script is auto-generated. Do not edit it directly!
+# @note This file will automatically be processed when installing some of the meta components.
+#
+
+# Ensure to use latest features/policies of CMake.
+cmake_minimum_required(VERSION 3.25...@CMAKE_VERSION@)
+
+
+# Calculate regex pattern for finding specific install-components.
+if ("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xRUNTIMEx")
+    set( GREP_PATTERN [==[.*if[(](["]x[$][{])?CMAKE_INSTALL_COMPONENT([}]x["])? STREQUAL ["]x?([^"]+-Runtime)x?["] OR NOT CMAKE_INSTALL_COMPONENT[)].*$]==] )
+elseif ("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xDEVELOPMENTx")
+    set( GREP_PATTERN [==[.*if[(](["]x[$][{])?CMAKE_INSTALL_COMPONENT([}]x["])? STREQUAL ["]x?([^"]+-Development)x?["] OR NOT CMAKE_INSTALL_COMPONENT[)].*$]==] )
+elseif ("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xPLUGINSx")
+    set( GREP_PATTERN [==[.*if[(](["]x[$][{])?CMAKE_INSTALL_COMPONENT([}]x["])? STREQUAL ["]x?([^"]+-Plugins)x?["] OR NOT CMAKE_INSTALL_COMPONENT[)].*$]==] )
+elseif ("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xDEBUGSYMBOLSx")
+    set( GREP_PATTERN [==[.*if[(](["]x[$][{])?CMAKE_INSTALL_COMPONENT([}]x["])? STREQUAL ["]x?([^"]+-DebugSymbols)x?["] OR NOT CMAKE_INSTALL_COMPONENT[)].*$]==] )
+else()
+    return()  # Nothing to do!
+endif()
+
+
+# Find all CMake install files in subdirectories.
+file( GLOB_RECURSE install_cmake_scripts
+    LIST_DIRECTORIES false
+    "cmake_install.cmake"
+)
+# Skip the ones which are located in a directory "_deps".
+list( FILTER install_cmake_scripts EXCLUDE REGEX "^.*/_deps/.*$" )
+
+# Grep all lines with install-components associated with the current install-component '${CMAKE_INSTALL_COMPONENT}'.
+set( lines )
+foreach( filename IN LISTS install_cmake_scripts )
+    file( STRINGS "${filename}" current_lines REGEX "${GREP_PATTERN}" )
+    list( APPEND lines ${current_lines} )
+endforeach()
+# Extract the different install-components associated with the current install-component '${CMAKE_INSTALL_COMPONENT}'.
+set( install_components )
+foreach( line IN LISTS lines )
+    string( REGEX REPLACE "${GREP_PATTERN}" "\\3" install_component "${line}" )
+    list( APPEND install_components "${install_component}" )
+endforeach()
+list( REMOVE_DUPLICATES install_components )
+
+
+# Prepare options for recursively calling the current "cmake_install.cmake".
+set( defines_for_recursive_call )
+if (DEFINED CMAKE_INSTALL_PREFIX)
+    list( APPEND defines_for_recursive_call "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}" )
+endif()
+if (DEFINED CMAKE_INSTALL_LOCAL_ONLY)
+    list( APPEND defines_for_recursive_call "-DCMAKE_INSTALL_LOCAL_ONLY=${CMAKE_INSTALL_LOCAL_ONLY}" )
+endif()
+if (DEFINED CMAKE_INSTALL_CONFIG_NAME)
+    list( APPEND defines_for_recursive_call "-DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_INSTALL_CONFIG_NAME}" )
+endif()
+if (DEFINED CMAKE_INSTALL_SO_NO_EXE)
+    list( APPEND defines_for_recursive_call "-DCMAKE_INSTALL_SO_NO_EXE=${CMAKE_INSTALL_SO_NO_EXE}" )
+endif()
+if (DEFINED CMAKE_CROSSCOMPILING)
+    list( APPEND defines_for_recursive_call "-DCMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}" )
+endif()
+if (DEFINED CMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS)
+    list( APPEND defines_for_recursive_call "-DCMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS=${CMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS}" )
+endif()
+if (DEFINED CMAKE_GET_RUNTIME_DEPENDENCIES_PLATFORM)
+    list( APPEND defines_for_recursive_call "-DCMAKE_GET_RUNTIME_DEPENDENCIES_PLATFORM=${CMAKE_GET_RUNTIME_DEPENDENCIES_PLATFORM}" )
+endif()
+if (DEFINED CMAKE_GET_RUNTIME_DEPENDENCIES_TOOL)
+    list( APPEND defines_for_recursive_call "-DCMAKE_GET_RUNTIME_DEPENDENCIES_TOOL=${CMAKE_GET_RUNTIME_DEPENDENCIES_TOOL}" )
+endif()
+if (DEFINED CMAKE_GET_RUNTIME_DEPENDENCIES_COMMAND)
+    list( APPEND defines_for_recursive_call "-DCMAKE_GET_RUNTIME_DEPENDENCIES_COMMAND=${CMAKE_GET_RUNTIME_DEPENDENCIES_COMMAND}" )
+endif()
+if (DEFINED CMAKE_OBJDUMP)
+    list( APPEND defines_for_recursive_call "-DCMAKE_OBJDUMP=${CMAKE_OBJDUMP}" )
+endif()
+
+# Call the current "cmake_install.cmake" script, this time for each extracted install-component.
+foreach( install_component IN LISTS install_components )
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+            -DCMAKE_INSTALL_COMPONENT=${install_component}
+            ${defines_for_recursive_call}
+            -P "${CMAKE_PARENT_LIST_FILE}"
+        COMMAND_ERROR_IS_FATAL ANY
+    )
+endforeach()
