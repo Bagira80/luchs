@@ -1,0 +1,29 @@
+##
+# @file
+# @brief Makes imported targets created by the current `find_package` call globally available.
+# @details For a `find_package(Foo ...)` call the boolean variable `Foo_IMPORT_GLOBALLY` determines
+#          if the imported targets created by that `find_package` call shall be promoted to global
+#          scope.  
+#          The current script takes care of it and will automatically be loaded after creation of
+#          the imported targets during the `find_package` call.
+# @note This (CMake-)script is auto-generated. Do not edit it directly!
+# @note For generation of this file the CMake variable `EXPORTED_TARGETS` must be set to the list
+#       of CMake targets that shall be exported and later imported by a call to `find_package`.
+#
+
+
+# Make imported targets globally available?
+if (${CMAKE_FIND_PACKAGE_NAME}_IMPORT_GLOBALLY)
+    foreach( imported_target IN ITEMS @EXPORTED_TARGETS@ )
+        if (NOT TARGET ${imported_target})
+            continue()
+        endif()
+        get_target_property( __IS_IMPORTED_TARGET_in_${CMAKE_CURRENT_LIST_FILE} ${imported_target} IMPORTED )
+        if (NOT __IS_IMPORTED_TARGET_in_${CMAKE_CURRENT_LIST_FILE})
+            message( DEBUG "${imported_target} is expected to be an IMPORTED target, but somehow is a normal target!?" )
+            continue()
+        endif()
+        set_target_properties( ${imported_target} PROPERTIES IMPORTED_GLOBAL TRUE )
+    endforeach()
+    unset( __IS_IMPORTED_TARGET_in_${CMAKE_CURRENT_LIST_FILE} )  # Clean up temporary variable.
+endif()
