@@ -66,6 +66,11 @@ configure_file( "${LUCHS_TEMPLATES_DIR}/CPackProjectConfig.cmake.in"
                 "${CPACK_PROJECT_CONFIG_FILE}"
                 @ONLY )
 
+# Generator-specific script for simple Archive-generators.
+configure_file( "${LUCHS_TEMPLATES_DIR}/CPackProjectConfig.Archive.cmake.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/CPackProjectConfig.Archive.cmake"
+                @ONLY )
+
 
 # ----------------------------------------------------------------------
 # Component- and group-specific settings for CPack
