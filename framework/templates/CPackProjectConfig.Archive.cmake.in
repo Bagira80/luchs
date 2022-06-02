@@ -1,0 +1,64 @@
+##
+# @file
+# @brief The CPack-time project CPack configuration for any of the "Archive" generators.
+# @note This (CPack-)script is auto-generated. Do not edit it directly!
+# @note This script will be included automatically by CPack from the `CPackProjectConfig` file
+#       with `CPACK_GENERATOR` set to one of `7Z`, `TBZ2`, `TGZ`, `TXZ`, `TZ`, `TZST` or `ZIP`.
+# @details Overrides some of the general CPack variables and sets specific CPack variables for the
+#          selected "Archive" generator, that will be used to create packages.
+#
+
+# Sanity-checks.
+if (NOT CPACK_GENERATOR MATCHES "^(7Z|STGZ|TBZ2|TGZ|TXZ|TZ|TZST|ZIP)$")
+    message( SEND_ERROR "CPackProjectConfig: Generator '${CPACK_GENERATOR}' is not supported by Archive-generator." )
+    return()
+endif()
+
+
+# ----------------------------------------------------------------------
+# Some default settings for using the Archive-generator
+# ----------------------------------------------------------------------
+
+# Enforce creating multiple packages (if not already set).
+if (NOT DEFINED CPACK_ARCHIVE_COMPONENT_INSTALL)
+    set( CPACK_ARCHIVE_COMPONENT_INSTALL ON )
+endif()
+# Ignore grouping of components and work with components directly (instead of groups)!
+set( CPACK_COMPONENTS_GROUPING           "IGNORE" )
+# Use the following package name if monolithic install.
+set( CPACK_ARCHIVE_FILE_NAME             "@project_package_fullname@" )
+
+
+# ----------------------------------------------------------------------
+# Component-specific settings for using the Archive-generator
+# ----------------------------------------------------------------------
+if (CPACK_ARCHIVE_COMPONENT_INSTALL)
+
+    # Only package components associated with the current project!
+    string( REGEX REPLACE "(.)" "[\\1]" component_name_pattern "@project_component_prefix_fullname@" )
+    list( FILTER CPACK_COMPONENTS_ALL INCLUDE REGEX "${component_name_pattern}.*" )
+
+    # Omit "*-DebugSymbols" component if no debug-symbols file was generated!
+    if (NOT CPACK_ENABLE_SEPARATE_DEBUGSYMBOLS OR
+        NOT ("${CPACK_BUILD_CONFIG}" STREQUAL "Debug" OR "${CPACK_BUILD_CONFIG}" STREQUAL "RelWithDebInfo"))
+        list( REMOVE_ITEM CPACK_COMPONENTS_ALL @project_component_prefix_fullname@-DebugSymbols )
+    endif()
+
+    # Determine compiler-tag part of the packages' names.
+    if (DEFINED CPACK_COMPILER_TAG AND NOT "x${CPACK_COMPILER_TAG}x" STREQUAL "xx")
+        set( compiler_tag "-${CPACK_COMPILER_TAG}" )
+    else()
+        set( compiler_tag "" )
+    endif()
+
+    # Set per-component package names.
+    set( components "Runtime" "DebugSymbols" "Development" "Plugins"  "Documentation" )
+    set( postfixes  ""        "-dbgsym"      "-dev"        "-plugins" "-doc" )
+    foreach( component postfix IN ZIP_LISTS components postfixes )
+        if ("@project_component_prefix_fullname@-${component}" IN_LIST CPACK_COMPONENTS_ALL)
+            string( TOUPPER "@project_component_prefix_fullname@-${component}" COMP )
+            set( CPACK_ARCHIVE_${COMP}_FILE_NAME "@project_package_fullname@${compiler_tag}${postfix}" )
+        endif()
+    endforeach()
+
+endif()
