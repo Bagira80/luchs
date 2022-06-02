@@ -5,6 +5,8 @@
 
 include_guard()
 
+include( "internal/cpack-deb-helpers" )
+
 
 ##
 # @name associate_project_targets_with_deb_packages( cpack_debian_config )
@@ -96,6 +98,8 @@ endfunction()
 #          the extra settings needed for the DEB-generator in order to create proper Debian
 #          packages.
 # @param output The path to the output file which will be generated.
+# @note The variable `${PROJECT_DEPENDENCIES}` should be set properly to the list of CMake targets
+#       on which the current project or more specifically its targets directly depend.
 # @note Generator-expressions in the output filename will be expanded.
 # @note This function does not create the output file until the generation phase. The output file
 #       will not yet have been written when this function returns, it is written only after
@@ -111,7 +115,11 @@ function( generate_cpack_deb_extra_settings_file outfile )
         ""
     )
 
-    # TODO: Add real content!
+    # Write commands for setting `CPACK_DEBIAN_PACKAGE_SHLIBDEPS_PRIVATE_DIRS` variable.
+    # Note: The variable `PROJECT_DEPENDENCIES` should have been set already to the list
+    #       of dependencies targets of the current project.
+    luchs_internal__prepare_cpack_deb_shlibdeps_variable( content ${PROJECT_DEPENDENCIES} )
+    list( APPEND file_content ${content} )
 
     # Generate the output file which will automatically evaluate the generator-expressions.
     list( JOIN file_content "\n\n" file_content )
