@@ -71,6 +71,14 @@ configure_file( "${LUCHS_TEMPLATES_DIR}/CPackProjectConfig.Archive.cmake.in"
                 "${CMAKE_CURRENT_BINARY_DIR}/CPackProjectConfig.Archive.cmake"
                 @ONLY )
 
+# DEB-generator specific settings.
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    # Generator-specific script for DEB-generator.
+    configure_file( "${LUCHS_TEMPLATES_DIR}/CPackProjectConfig.DEB.cmake.in"
+                    "${CMAKE_CURRENT_BINARY_DIR}/CPackProjectConfig.DEB.cmake"
+                    @ONLY )
+endif()
+
 
 # ----------------------------------------------------------------------
 # Component- and group-specific settings for CPack
