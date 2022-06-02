@@ -1,0 +1,28 @@
+##
+# @file
+# @brief The CPack-time project CPack configuration which delegates to the generator-specific one.
+# @note This (CPack-)script is auto-generated. Do not edit it directly!
+# @note CPack will load this script automatically for each package-generator after processing
+#       `CPackConfig`, with variable `CPACK_GENERATOR` set to the current package-generator.
+# @details It overrides some of the general CPack variables and then loads the generator-specific
+#          `CPackProjectConfig.*` script which might override or provide some additional CPack
+#          variables and set specific CPack variables for the current package-generator.
+#
+
+cmake_minimum_required( VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@...@CMAKE_VERSION@ )
+
+# Override CPACK_PACKAGE_DIRECTORY, to store the generated packages in a sub-directory
+# which has the name of the current build configuration (CPACK_BUILD_CONFIG).
+set( CPACK_PACKAGE_DIRECTORY "${CPACK_PACKAGE_DIRECTORY}/${CPACK_BUILD_CONFIG}" )
+
+
+# Delegate to the "Archive" generator script?
+if (CPACK_GENERATOR MATCHES "^(7Z|STGZ|TBZ2|TGZ|TXZ|TZ|TZST|ZIP)$" AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/CPackProjectConfig.Archive.cmake")
+    include( "${CMAKE_CURRENT_LIST_DIR}/CPackProjectConfig.Archive.cmake" )
+# Delegate to the script for another generator?
+elseif (EXISTS "${CMAKE_CURRENT_LIST_DIR}/CPackProjectConfig.${CPACK_GENERATOR}.cmake")
+    include( "${CMAKE_CURRENT_LIST_DIR}/CPackProjectConfig.${CPACK_GENERATOR}.cmake" )
+# Unsupported generator?
+else()
+    message( SEND_ERROR "Cannot create packages for (unsupported) generator. (Missing 'CPackProjectConfig.${CPACK_GENERATOR}.cmake'.)" )
+endif()
