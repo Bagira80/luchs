@@ -87,3 +87,33 @@ function( associate_project_targets_with_deb_packages cpack_debian_config )
         endforeach()
     endforeach()
 endfunction()
+
+
+##
+# @name generate_cpack_deb_extra_settings_file( outfile )
+# @brief Generates the additional CPack file which contains extra settings for the DEB-generator.
+# @details The generated file will be stored with the given output name (and path) and it contains
+#          the extra settings needed for the DEB-generator in order to create proper Debian
+#          packages.
+# @param output The path to the output file which will be generated.
+# @note Generator-expressions in the output filename will be expanded.
+# @note This function does not create the output file until the generation phase. The output file
+#       will not yet have been written when this function returns, it is written only after
+#       processing all CMakeLists.txt files!
+#
+function( generate_cpack_deb_extra_settings_file outfile )
+    # Write header comment for generated file.
+    string( JOIN "\n" file_content
+        "# Auto-generated file, do not modify!"
+        "#"
+        "# This file is a helper file for CPack's DEB-generator which contains additional CPack variables."
+        "#"
+        ""
+    )
+
+    # TODO: Add real content!
+
+    # Generate the output file which will automatically evaluate the generator-expressions.
+    list( JOIN file_content "\n\n" file_content )
+    file( GENERATE OUTPUT ${outfile} CONTENT "${file_content}" )
+endfunction()
