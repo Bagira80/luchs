@@ -79,6 +79,9 @@ if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
                     @ONLY )
 
     include( "cpack-deb-helpers" )
+
+    # Generate CPack helper file for finding locally built dependencies, too.
+    generate_cpack_deb_extra_settings_file( "${CMAKE_CURRENT_BINARY_DIR}/cpack_extra_settings_$<CONFIG>.cmake" )
 endif()
 
 
