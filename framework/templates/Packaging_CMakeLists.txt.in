@@ -77,6 +77,8 @@ if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
     configure_file( "${LUCHS_TEMPLATES_DIR}/CPackProjectConfig.DEB.cmake.in"
                     "${CMAKE_CURRENT_BINARY_DIR}/CPackProjectConfig.DEB.cmake"
                     @ONLY )
+
+    include( "cpack-deb-helpers" )
 endif()
 
 
@@ -87,6 +89,14 @@ endif()
 # Load CPack
 # Note: This populates variable `CPACK_COMPONENTS_ALL`, too.
 include( CPack )
+
+
+# DEB-generator specific settings.
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    # Store the names of associated DEB-packages as property in all targets of the current project.
+    # Note: This requires `CPACK_COMPONENTS_ALL` to be populated, which is why this function was not called above.
+    associate_project_targets_with_deb_packages( "${CMAKE_CURRENT_BINARY_DIR}/CPackProjectConfig.DEB.cmake" )
+endif()
 
 
 # Reset temporary helper variables.
