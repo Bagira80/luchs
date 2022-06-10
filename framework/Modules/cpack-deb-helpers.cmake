@@ -121,6 +121,10 @@ function( generate_cpack_deb_extra_settings_file outfile )
     luchs_internal__prepare_cpack_deb_shlibdeps_variable( content ${PROJECT_DEPENDENCIES} )
     list( APPEND file_content ${content} )
 
+    # Write commands for setting `CPACK_DEBIAN_<component>_PACKAGE_DEPENDS` variables.
+    luchs_internal__prepare_cpack_deb_depends_variables( content )
+    list( APPEND file_content ${content} )
+
     # Generate the output file which will automatically evaluate the generator-expressions.
     list( JOIN file_content "\n\n" file_content )
     file( GENERATE OUTPUT ${outfile} CONTENT "${file_content}" )
