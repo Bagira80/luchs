@@ -81,3 +81,10 @@ if (NOT CMAKE_CROSSCOMPILING)
         option( CPACK_BINARY_ZIP   "Support creating ZIP-packages?"   ON )
     endif()
 endif()
+
+
+# Generate main CPack configuration file (in order to get a target called "package") which
+# recursively calls all packaging configs from sub-directories to conveniently create all packages.
+configure_file( "${LUCHS_TEMPLATES_DIR}/CPackConfig.cmake.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/CPackConfig.cmake"
+                @ONLY )
