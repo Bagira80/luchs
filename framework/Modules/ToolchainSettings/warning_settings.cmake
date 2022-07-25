@@ -137,6 +137,8 @@ function( enable_default_linker_warnings_as_errors )
     set( IF_CXX_GNU_FRONTEND  "$<AND:$<LINK_LANG_AND_ID:CXX,GNU,Clang>,$<NOT:$<STREQUAL:${CMAKE_CXX_SIMULATE_ID},MSVC>>>" )
     set( IF_C_MSVC_FRONTEND   "$<AND:$<LINK_LANGUAGE:C>,$<OR:$<C_COMPILER_ID:MSVC>,$<STREQUAL:${CMAKE_C_SIMULATE_ID},MSVC>>>" )
     set( IF_CXX_MSVC_FRONTEND "$<AND:$<LINK_LANGUAGE:CXX>,$<OR:$<CXX_COMPILER_ID:MSVC>,$<STREQUAL:${CMAKE_CXX_SIMULATE_ID},MSVC>>>" )
+    set( IS_SHARED_OBJECT     "$<OR:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>,$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>>" )
+    set( IS_SANITIZER_ENABLED "$<OR:$<BOOL:${SANITIZER_UBSan}>,$<BOOL:${SANITIZER_ASan}>,$<BOOL:${SANITIZER_LSan}>,$<BOOL:${SANITIZER_TSan}>,$<BOOL:${SANITIZER_MSan}>>" )
     if (C IN_LIST _luchs_LANGUAGES)
         # Treat linker-warnings as errors.
         add_link_options( $<${IF_C_MSVC_FRONTEND}:LINKER:/WX> )
@@ -150,6 +152,17 @@ function( enable_default_linker_warnings_as_errors )
             # Supported by:     Gold
             # Not supported by: BFD, Mold
             # Ignored by:       LLD
+
+        # Enforce resolving all symbols during linking.
+        # Note: Not supported and therefore disabled when linking a shared object using Clang if sanitizer support is enabled.
+        add_link_options( $<$<AND:${IF_C_GNU_FRONTEND},$<NOT:$<AND:$<C_COMPILER_ID:Clang>,${IS_SHARED_OBJECT},${IS_SANITIZER_ENABLED}>>>:LINKER:--no-undefined> )
+            # Supported by:     BFD, Gold, LLD, Mold
+            # Not supported by: N/A
+            # Ignored by:       N/A
+        add_link_options( $<$<AND:${IF_C_GNU_FRONTEND},$<NOT:$<AND:$<C_COMPILER_ID:Clang>,${IS_SHARED_OBJECT},${IS_SANITIZER_ENABLED}>>>:LINKER:--no-allow-shlib-undefined> )
+            # Supported by:     BFD, Gold, LLD
+            # Not supported by: N/A
+            # Ignored by:       Mold
     endif()
     if (CXX IN_LIST _luchs_LANGUAGES)
         # Treat linker-warnings as errors.
@@ -164,5 +177,16 @@ function( enable_default_linker_warnings_as_errors )
             # Supported by:     Gold
             # Not supported by: BFD, Mold
             # Ignored by:       LLD
+
+        # Enforce resolving all symbols during linking.
+        # Note: Not supported and therefore disabled when linking a shared object using Clang if sanitizer support is enabled.
+        add_link_options( $<$<AND:${IF_CXX_GNU_FRONTEND},$<NOT:$<AND:$<CXX_COMPILER_ID:Clang>,${IS_SHARED_OBJECT},${IS_SANITIZER_ENABLED}>>>:LINKER:--no-undefined> )
+            # Supported by:     BFD, Gold, LLD, Mold
+            # Not supported by: N/A
+            # Ignored by:       N/A
+        add_link_options( $<$<AND:${IF_CXX_GNU_FRONTEND},$<NOT:$<AND:$<CXX_COMPILER_ID:Clang>,${IS_SHARED_OBJECT},${IS_SANITIZER_ENABLED}>>>:LINKER:--no-allow-shlib-undefined> )
+            # Supported by:     BFD, Gold, LLD
+            # Not supported by: N/A
+            # Ignored by:       Mold
     endif()
 endfunction()
