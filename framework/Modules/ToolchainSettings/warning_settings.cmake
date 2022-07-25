@@ -163,6 +163,13 @@ function( enable_default_linker_warnings_as_errors )
             # Supported by:     BFD, Gold, LLD
             # Not supported by: N/A
             # Ignored by:       Mold
+
+        # Only actually link needed libraries!
+        # Note: This is actually no warning/error, but it fits here best.
+        add_link_options( $<${IF_C_GNU_FRONTEND}:LINKER:--as-needed> )
+            # Supported by:     BFD, Gold, LLD, Mold
+            # Not supported by: N/A
+            # Ignored by:       N/A
     endif()
     if (CXX IN_LIST _luchs_LANGUAGES)
         # Treat linker-warnings as errors.
@@ -188,5 +195,12 @@ function( enable_default_linker_warnings_as_errors )
             # Supported by:     BFD, Gold, LLD
             # Not supported by: N/A
             # Ignored by:       Mold
+
+        # Only actually link needed libraries!
+        # Note: This is actually no warning/error, but it fits here best.
+        add_link_options( $<${IF_CXX_GNU_FRONTEND}:LINKER:--as-needed> )
+            # Supported by:     BFD, Gold, LLD, Mold
+            # Not supported by: N/A
+            # Ignored by:       N/A
     endif()
 endfunction()
