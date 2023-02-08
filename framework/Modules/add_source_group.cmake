@@ -126,3 +126,81 @@ function( add_source_group )
         source_group( "${_luchs_GROUP}${prefix}" FILES ${filtered_sources} )
     endforeach()
 endfunction()
+
+
+##
+# @name add_project_source_group( PUBLIC|PRIVATE|PUBLIC_GENERATED|PRIVATE_GENERATED|PUBLIC_TEST|PRIVATE_TEST sources... )
+# @brief Convenience function which groups the given sources for IDEs.
+# @details This is a convenience wrapper around `add_source_group` which calls it with default
+#          settings for the given set(s) of sources.
+# @param  PUBLIC sources... The individual public sources that will be grouped for IDEs into a
+#         group _Public Sources_.
+# @param  PRIVATE sources... The individual private sources that will be grouped for IDEs into a
+#         group _Private Sources_.
+# @param  PUBLIC_GENERATED sources... The individual public generated sources that will be grouped
+#         for IDEs into a group _Public Generated Sources_.
+# @param  PRIVATE_GENERATED sources... The individual private generated sources that will be
+#         grouped for IDEs into a group _Private Generated Sources_.
+# @param  PUBLIC_TEST sources... The individual public test sources that will be grouped for IDEs
+#         into a group _Private Test Sources_.
+# @param  PRIVATE_TEST sources... The individual private test sources that will be grouped for IDEs
+#         into a group _Private Test Sources_.
+#
+function( add_project_source_group )
+    cmake_parse_arguments(
+         "_luchs"
+         ""
+         ""
+         "PUBLIC;PRIVATE;PUBLIC_GENERATED;PRIVATE_GENERATED;PUBLIC_TEST;PRIVATE_TEST"
+         ${ARGN} )
+    if (NOT DEFINED _luchs_KEWORDS_MISSING_VALUES AND
+        NOT DEFINED _luchs_PUBLIC           AND NOT DEFINED _luchs_PRIVATE AND
+        NOT DEFINED _luchs_PUBLIC_GENERATED AND NOT DEFINED _luchs_PRIVATE_GENERATED AND
+        NOT DEFINED _luchs_PUBLIC_TEST      AND NOT DEFINED _luchs_PRIVATE_TEST)
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Missing arguments!" )
+    endif()
+    foreach( keyword IN LISTS _luchs_KEYWORDS_MISSING_VALUES )
+        message( DEBUG "WARNING -- ${CMAKE_CURRENT_FUNCTION}: Missing sources for '${keyword}'!" )
+    endforeach()
+    if (DEFINED _luchs_UNPARSED_ARGUMENTS)
+        list( JOIN _luchs_UNPARSED_ARGUMENTS "`, `" _luchs_UNPARSED_ARGUMENTS )
+        message( SEND_ERROR "${CMAKE_CURRENT_FUNCTION}: Received unknown option(s) (`${_luchs_UNPARSED_ARGUMENTS}`)!" )
+    endif()
+    # Add sources into source-groups.
+    if (DEFINED _luchs_PUBLIC)
+        add_source_group( FLAT_GROUP GROUP "Public Sources"
+            STRIP_PREFIXES "include/" "${PROJECT_SOURCE_DIR}/include/"
+            SOURCES "${_luchs_PUBLIC}"
+        )
+    endif()
+    if (DEFINED _luchs_PRIVATE)
+        add_source_group( FLAT_GROUP GROUP "Private Sources"
+            STRIP_PREFIXES "src/" "${PROJECT_SOURCE_DIR}/src/"
+            SOURCES "${_luchs_PRIVATE}"
+        )
+    endif()
+    if (DEFINED _luchs_PUBLIC_GENERATED)
+        add_source_group( FLAT_GROUP GROUP "Public Generated Sources"
+            STRIP_PREFIXES "${PROJECT_BINARY_DIR}/include/"
+            SOURCES "${_luchs_PUBLIC_GENERATED}"
+        )
+    endif()
+    if (DEFINED _luchs_PRIVATE_GENERATED)
+        add_source_group( FLAT_GROUP GROUP "Private Generated Sources"
+            STRIP_PREFIXES "${PROJECT_BINARY_DIR}/src/"
+            SOURCES "${_luchs_PRIVATE_GENERATED}"
+        )
+    endif()
+    if (DEFINED _luchs_PUBLIC_TEST)
+        add_source_group( FLAT_GROUP GROUP "Public Test Sources"
+            STRIP_PREFIXES "include/" "${PROJECT_SOURCE_DIR}/include/"
+            SOURCES "${_luchs_PUBLIC_TEST}"
+        )
+    endif()
+    if (DEFINED _luchs_PRIVATE_TEST)
+        add_source_group( FLAT_GROUP GROUP "Private Test Sources"
+            STRIP_PREFIXES "test/" "${PROJECT_SOURCE_DIR}/test/"
+            SOURCES "${_luchs_PRIVATE_TEST}"
+        )
+    endif()
+endfunction()
