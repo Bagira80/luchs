@@ -1,0 +1,2 @@
+# Auto detect text files and perform LF normalization on checkin and preserve it on checkout.
+*          text=auto eol=lf
