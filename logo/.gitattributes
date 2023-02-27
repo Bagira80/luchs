@@ -1,0 +1,21 @@
+# Settings that should explicitly apply to the "luchs" images from this directory.
+# Note: In particular we do not want any Git LFS filters applied to these images!
+
+
+# Do NO line-ending conversion on any file (by default)!
+*          -text
+
+# Graphics
+*.png      binary -text -diff -merge -filter
+*.jpg      binary -text -diff -merge -filter
+*.jpeg     binary -text -diff -merge -filter
+*.gif      binary -text -diff -merge -filter
+*.tif      binary -text -diff -merge -filter
+*.tiff     binary -text -diff -merge -filter
+*.ico      binary -text -diff -merge -filter
+# Text-based vector-graphics where line endings should be preserved
+# *.svg      -text merge=binary
+# *.eps      -text merge=binary
+# Possibly more correct!
+*.svg      text eol=lf merge=binary
+*.eps      text eol=lf merge=binary
