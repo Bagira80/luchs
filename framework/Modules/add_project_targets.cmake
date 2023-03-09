@@ -18,10 +18,9 @@ include( "internal/add_project_targets_helper" )
 # @brief Loads the lists of sources for the target with the given name and returns them.
 # @details If the following files exist, these will be assumed to contain the list of private and
 #          public source files which then will be read and returned to caller's scope:
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_private.cmake`
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_public.cmake`
-# @param target The name of the target. It should have the form `${PROJECT_NAME}-<basename>`.
-#        If it has another form, the entire name is assumed to be the basename.
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${target}.private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${target}.public.cmake`
+# @param target The name of the target.
 # @note The parsed sources will be returned in variables `private_sources` and `public_sources`.
 # @note The variables `PROJECT_NAME` and `PROJECT_SOURCE_DIR` need to be defined!
 # @note Therefore the `project` command and its pre-action should have been called before.
@@ -30,13 +29,6 @@ include( "internal/add_project_targets_helper" )
 #       line.
 #
 function( load_project_sources target )
-    # Calculate basename.
-    if ("${target}" MATCHES "${PROJECT_NAME}-(.+)")
-        set( basename "${CMAKE_MATCH_1}" )
-    else()
-        set( basename "${target}" )
-    endif()
-
     # Load the list of private source files.
     # Note: In order to re-trigger CMake if the list of files changes, we have to use the 'include'
     #       command to load the file containing it. However, that file should not need to contain
@@ -46,7 +38,7 @@ function( load_project_sources target )
     #       Now, in order to still parse the content, we have to use the `file(STRINGS)` command.
     #       If the resulting string contains CMake variables we additionally must re-evaluate them.
     set(private_sources "")
-    include( "${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_private.cmake"
+    include( "${PROJECT_SOURCE_DIR}/luchs/sources/${target}.private.cmake"
         OPTIONAL RESULT_VARIABLE source_file )
     if (source_file)
         file( STRINGS "${source_file}" private_sources REGEX "^[ \t]*[^#]+$" )
@@ -57,7 +49,7 @@ function( load_project_sources target )
     # Load the list of public source files.
     # Note: The same note from above applies here as well!
     set(public_sources "")
-    include( "${PROJECT_SOURCE_DIR}/luchs/project-sources_-_${basename}_-_public.cmake"
+    include( "${PROJECT_SOURCE_DIR}/luchs/sources/${target}.public.cmake"
         OPTIONAL RESULT_VARIABLE source_file )
     if (source_file)
         file( STRINGS "${source_file}" public_sources REGEX "^[ \t]*[^#]+$" )
@@ -85,8 +77,8 @@ endfunction()
 #          `STATIC` or `MODULE` targets.)  
 #          If the following files exist, these will be assumed to contain the list of private and
 #          public source files which then will be read and added to the target as well.
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_private.cmake`
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_public.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${name}.private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${name}.public.cmake`
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param type The type of target. Must be either not given (in which case the `BUILD_SHARED_LIBS`
 #        variable determines its type) or one of: `SHARED`, `STATIC`, `MODULE`, `OBJECT` or
@@ -159,8 +151,8 @@ endfunction()
 #          instructed to split debug information into a separate file.  
 #          If the following files exist, these will be assumed to contain the list of private and
 #          public source files which then will be read and added to the target as well.
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_private.cmake`
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_public.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${name}.private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${name}.public.cmake`
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param EXCLUDE_FROM_ALL Determines if the target should be built by default.
 # @note The variables `PROJECT_NAME`, `project_export_namespace`, `PROJECT_VERSION_MAJOR`,
@@ -209,8 +201,8 @@ endfunction()
 #          instructed to split debug information into a separate file.  
 #          If the following files exist, these will be assumed to contain the list of private and
 #          public source files which then will be read and added to the target as well.
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_private.cmake`
-#          * `${PROJECT_SOURCE_DIR}/luchs/project-sources_-_<basename>_-_public.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${name}.private.cmake`
+#          * `${PROJECT_SOURCE_DIR}/luchs/sources/${name}.public.cmake`
 # @param name The name of the target. It must be in the form of `[$][{]PROJECT_NAME[}](-.+)?`.
 # @param NO_SEPARATE_TEST_RUNS Determines that individual tests of that target shall not be run
 #        individually by CTest, but the entire test-executable with all tests should be run as a

@@ -122,13 +122,11 @@ target with its alias name.
 Additionally, each command automatically reads in specific files (if available) that contain the
 list of public and private sources needed to build the target and adds these as sources to the
 target. (This allows to keep the list of sources for a target outside the `CMakeLists.txt` file.)  
-These specific files with the list of public/private sources must be located in the `luchs`
-subdirectory of the current project as well and must be named
-`project-sources_-_<identifier>_-_public.cmake` for public sources (aka header files) and
-`project-sources_-_<identifier>_-_private.cmake` for private sources.  
-The placeholder `<identifier>` needs to be replaced either by the entire name of the target or, in
-case the target's name has the form `${PROJECT_NAME}-<name>`, only by the `<name>` part of the
-target's name.
+These specific files with the list of public/private sources must be located in the
+`luchs/sources` subdirectory of the current project and must be named `<target-name>.public.cmake`
+for public sources (aka header files) and `<target-name>.private.cmake` for private sources.  
+The placeholder `<target-name>` needs to be replaced by the name of the target with which the
+sources are associated.
 
 
 ### Format for files containing lists of public/private sources
@@ -146,7 +144,7 @@ Example of a file containing public sources (aka headers):
 
 ```cmake
 #[====================[
-# Public sources for target: <identifier>
+# Public sources for target: <target-name>
 #
 # Generated source files:
 ${PROJECT_BINARY_DIR}/include/${project_folder_fullname}/header1.hpp
@@ -160,7 +158,7 @@ Example of a file containing private sources:
 
 ```cmake
 #[====================[
-# Private sources for target: <identifier>
+# Private sources for target: <target-name>
 #
 # Generated source files:
 ${PROJECT_BINARY_DIR}/src/${project_folder_fullname}/source1.cpp
