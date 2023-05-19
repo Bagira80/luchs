@@ -15,14 +15,29 @@
 function( disable_separate_debugsymbols )
     # Disabling this for Windows?
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-        # Note: Disabling separate debug-symbols files (*.pdb) for MSVC (or Clang-cl) is not
-        #       possible! However, it is possible to make object files (and static libraries?)
+        # First determine if a specific CMake setting shall be used for MSVC and compatible compilers.
+        if (POLICY CMP0141)
+            cmake_policy( GET CMP0141 use_modern_way )
+            if (use_modern_way STREQUAL "NEW")
+                set( use_modern_way "TRUE" )
+            else()
+                set( use_modern_way "FALSE" )
+            endif()
+        endif()
+        # Note: Disabling separate debug-symbols files (*.pdb) for libraries or executables created
+        #       by MSVC (or Clang-cl) is not possible. One can only drop debug information entirely
+        #       (which is not what we want here).  
+        #       However, it is at least possible to make object files (and static libraries) that
         #       contain the debug symbols directly. (But DLLs and executables must still create
         #       separate *.pdb files because they cannot carry debug symbols directly.)
         # See: https://docs.microsoft.com/en-us/cpp/build/reference/debug-generate-debug-info
         if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
            (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
-            add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Z7>" )
+            if (use_modern_way)
+                set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:Embedded>")
+            else()
+                add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Z7>" )
+            endif()
         elseif (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND
                 CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
             # Note: Possibly nothing we can do about it.
@@ -31,7 +46,11 @@ function( disable_separate_debugsymbols )
         endif()
         if (CMAKE_C_COMPILER_ID STREQUAL "MSVC" OR
            (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
-            add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Z7>" )
+            if (use_modern_way)
+                set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:Embedded>")
+            else()
+                add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Z7>" )
+            endif()
         elseif (CMAKE_C_SIMULATE_ID STREQUAL "MSVC" AND
                 CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
             # Note: Possibly nothing we can do about it.
@@ -67,14 +86,27 @@ function( enable_separate_debugsymbols only_after_linking )
     # Enabling this for Windows?
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
+        # First determine if a specific CMake setting shall be used for MSVC and compatible compilers.
+        if (POLICY CMP0141)
+            cmake_policy( GET CMP0141 use_modern_way )
+            if (use_modern_way STREQUAL "NEW")
+                set( use_modern_way "TRUE" )
+            else()
+                set( use_modern_way "FALSE" )
+            endif()
+        endif()
         # Note: Enabling separate debug symbol files (*.pdb) for MSVC (or Clang-cl) is simple, as
         #       this seems to be the only way to generate (usable) debug symbols. And it is enabled
         #       by default.
         if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
            (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
-            # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
-            #       by CMake in Debug or RelWithDebInfo configurations.
-            #add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+            if (use_modern_way)
+                set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:ProgramDatabase>")
+            else()
+                # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
+                #       by CMake in Debug or RelWithDebInfo configurations.
+                #add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+            endif()
         elseif (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND
                 CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
             # Note: This seems to work out of the box.
@@ -83,9 +115,13 @@ function( enable_separate_debugsymbols only_after_linking )
         endif()
         if (CMAKE_C_COMPILER_ID STREQUAL "MSVC" OR
            (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
-            # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
-            #       by CMake in Debug or RelWithDebInfo configurations.
-            #add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+            if (use_modern_way)
+                set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:ProgramDatabase>")
+            else()
+                # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
+                #       by CMake in Debug or RelWithDebInfo configurations.
+                #add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+            endif()
         elseif (CMAKE_C_SIMULATE_ID STREQUAL "MSVC" AND
                 CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
             # Note: This seems to work out of the box.
