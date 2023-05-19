@@ -100,12 +100,18 @@ function( enable_separate_debugsymbols only_after_linking )
         #       by default.
         if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
            (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
-            if (use_modern_way)
-                set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:ProgramDatabase>")
+            if (ENABLE_EDIT_AND_CONTINUE_DEBUGGING)
+                if (use_modern_way)
+                    set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:EditAndContinue>")
+                else()
+                    add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/ZI>" )
+                endif()
             else()
-                # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
-                #       by CMake in Debug or RelWithDebInfo configurations.
-                #add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+                if (use_modern_way)
+                    set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:ProgramDatabase>")
+                else()
+                    add_compile_options( "$<$<AND:$<CXX_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+                endif()
             endif()
         elseif (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC" AND
                 CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
@@ -115,12 +121,18 @@ function( enable_separate_debugsymbols only_after_linking )
         endif()
         if (CMAKE_C_COMPILER_ID STREQUAL "MSVC" OR
            (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
-            if (use_modern_way)
-                set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:ProgramDatabase>")
+            if (ENABLE_EDIT_AND_CONTINUE_DEBUGGING)
+                if (use_modern_way)
+                    set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:EditAndContinue>")
+                else()
+                    add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/ZI>" )
+                endif()
             else()
-                # Note: The `/Zi` option is not needed to be set explicitly because it will be set by default
-                #       by CMake in Debug or RelWithDebInfo configurations.
-                #add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+                if (use_modern_way)
+                    set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:ProgramDatabase>")
+                else()
+                    add_compile_options( "$<$<AND:$<C_COMPILER_ID:MSVC,Clang>,$<CONFIG:Debug,RelWithDebInfo>>:/Zi>" )
+                endif()
             endif()
         elseif (CMAKE_C_SIMULATE_ID STREQUAL "MSVC" AND
                 CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")

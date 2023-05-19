@@ -102,6 +102,16 @@ else()
 endif()
 
 
+# Enable Edit-and-Continue debugging feature on Windows (globally)?
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    option( ENABLE_EDIT_AND_CONTINUE_DEBUGGING "Enable Edit-and-Continue debugging feature." ON )
+    mark_as_advanced( ENABLE_EDIT_AND_CONTINUE_DEBUGGING )
+endif()
+if (ENABLE_EDIT_AND_CONTINUE_DEBUGGING AND NOT ENABLE_SEPARATE_DEBUGSYMBOLS)
+    message( WARNING "Cannot use Edit-and-Continue feature if separate debug-symbols are disabled!" )
+endif()
+
+
 # Load toolchain post-settings?
 if (EXISTS "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in")
     configure_file( "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in"
