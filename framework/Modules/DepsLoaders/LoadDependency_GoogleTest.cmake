@@ -31,6 +31,9 @@ if (NOT TARGET GoogleTest::gtest)
     # Create alias targets and change accordingly how these are displayed in IDEs.
     set( unicodeProportionChar "∷" )  # A fixed double-colon (U+2237) that does not collide with the drive-separator on Windows systems.
     if (NOT TARGET GoogleTest::gtest AND TARGET gtest)
+        if (TARGET sanitizers)
+            target_link_libraries( gtest PUBLIC $<BUILD_INTERFACE:sanitizers> )
+        endif()
         add_library( GoogleTest::gtest ALIAS gtest )
         set_target_properties( gtest PROPERTIES
             PROJECT_LABEL "GoogleTest${unicodeProportionChar}gtest"
@@ -38,6 +41,9 @@ if (NOT TARGET GoogleTest::gtest)
         )
     endif()
     if (NOT TARGET GoogleTest::gtest_main AND TARGET gtest_main)
+        if (TARGET sanitizers)
+            target_link_libraries( gtest_main PUBLIC $<BUILD_INTERFACE:sanitizers> )
+        endif()
         add_library( GoogleTest::gtest_main ALIAS gtest_main )
         set_target_properties( gtest_main PROPERTIES
             PROJECT_LABEL "GoogleTest${unicodeProportionChar}gtest_main"
@@ -45,6 +51,9 @@ if (NOT TARGET GoogleTest::gtest)
         )
     endif()
     if (NOT TARGET GoogleTest::gmock AND TARGET gmock)
+        if (TARGET sanitizers)
+            target_link_libraries( gmock PUBLIC $<BUILD_INTERFACE:sanitizers> )
+        endif()
         add_library( GoogleTest::gmock ALIAS gmock )
         set_target_properties( gmock PROPERTIES
             PROJECT_LABEL "GoogleTest${unicodeProportionChar}gmock"
@@ -52,6 +61,9 @@ if (NOT TARGET GoogleTest::gtest)
         )
     endif()
     if (NOT TARGET GoogleTest::gmock_main AND TARGET gmock_main)
+        if (TARGET sanitizers)
+            target_link_libraries( gmock_main PUBLIC $<BUILD_INTERFACE:sanitizers> )
+        endif()
         add_library( GoogleTest::gmock_main ALIAS gmock_main )
         set_target_properties( gmock_main PROPERTIES
             PROJECT_LABEL "GoogleTest${unicodeProportionChar}gmock_main"
