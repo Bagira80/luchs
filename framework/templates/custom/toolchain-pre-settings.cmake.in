@@ -1,0 +1,15 @@
+##
+# @file
+# @note This (CMake-)file is auto-generated. Do not edit it directly!
+# @note This file will automatically be included when loading toolchain settings.
+# @details This file contains custom toolchain-specific settings which are loaded *before* the
+#          common toolchain-specific settings that `luchs` provides.
+#
+
+# This file may only be called once.
+include_guard(GLOBAL)
+
+# Verify that this file is included directly from the common toolchain-settings file.
+if (NOT CMAKE_PARENT_LIST_FILE STREQUAL "${LUCHS_CMAKE_SCRIPTS_DIR}/Modules/toolchain-settings.cmake")
+    message( FATAL_ERROR "The current CMake script may only ever be called from the common \"toolchain-settings.cmake\" file!" )
+endif()

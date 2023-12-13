@@ -12,3 +12,21 @@ include_guard(GLOBAL)
 if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     message( FATAL_ERROR "The current CMake script may only ever be called from the top-level CMakeLists.txt file!" )
 endif()
+
+
+# Load toolchain pre-settings?
+if (EXISTS "${LUCHS_TEMPLATES_DIR}/custom/toolchain-pre-settings.cmake.in")
+    configure_file( "${LUCHS_TEMPLATES_DIR}/custom/toolchain-pre-settings.cmake.in"
+                    "${LUCHS_BINARY_DIR}/toolchain-pre-settings.cmake"
+                    NEWLINE_STYLE LF )
+    include( "${LUCHS_BINARY_DIR}/toolchain-pre-settings.cmake" )
+endif()
+
+
+# Load toolchain post-settings?
+if (EXISTS "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in")
+    configure_file( "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in"
+                    "${LUCHS_BINARY_DIR}/toolchain-post-settings.cmake"
+                    NEWLINE_STYLE LF )
+    include( "${LUCHS_BINARY_DIR}/toolchain-post-settings.cmake" )
+endif()
