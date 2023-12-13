@@ -3,6 +3,7 @@
 # @details This file defines functions which make Windows specific settings to compiler/linker.
 #          * A function that generates the `targetver.h` header and includes it by default.
 #          * A function that enforces the minimal supported windows version.
+#          * A function that enables the Unicode character-set globally.
 #
 
 
@@ -55,4 +56,14 @@ function( enforce_minimal_supported_windows_version )
         # Enforce that minimal supported Windows version when linking.
         add_link_options( "LINKER:SHELL:/SUBSYSTEM:$<IF:$<BOOL:$<TARGET_PROPERTY:WIN32_EXECUTABLE>>,WINDOWS,CONSOLE>,${win_major_version}.${win_minor_version}" )
     endif()
+endfunction()
+
+
+##
+# @name enable_unicode_charset_globally()
+# @brief Defines Unicode macros to enable Unicode by default (for C++ and C runtime on Windows).
+# @note This also has an effect on the generation of MSBuild project files.
+#
+function( enable_unicode_charset_globally )
+    add_compile_definitions( "UNICODE" "_UNICODE" )
 endfunction()
