@@ -40,6 +40,16 @@ if (ENFORCE_MINIMAL_SUPPORTED_WINDOWS_VERSION)
 endif()
 
 
+# Generate MSBuild / Visual Studio project files with Unicode character-set?
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    option( USE_UNICODE_CHARSET "Use the Unicode character-set instead of the Multi-Byte character-set?" ON )
+    mark_as_advanced( USE_UNICODE_CHARSET )
+endif()
+if (USE_UNICODE_CHARSET)
+    enable_unicode_charset_globally()
+endif()
+
+
 # Load toolchain post-settings?
 if (EXISTS "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in")
     configure_file( "${LUCHS_TEMPLATES_DIR}/custom/toolchain-post-settings.cmake.in"
