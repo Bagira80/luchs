@@ -79,3 +79,7 @@ set( CMAKE_FOLDER "${project_folder_fullname}" )
 # Generate some extra project header / source / resource files.
 include( generate_extra_project_files )
 generate_extra_project_sources()
+# Possibly generate some extra MSBuild property file.
+if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+    generate_extra_project_msbuild_property_file()
+endif()
