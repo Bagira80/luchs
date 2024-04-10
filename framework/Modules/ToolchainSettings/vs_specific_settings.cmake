@@ -1,6 +1,8 @@
 ##
 # @file
 # @details This file defines functions which make Visual Studio specific settings to compiler/linker.
+#          * A function that generates the common, global property file that will be loaded by each
+#            target of a project by default when building with MSBuild / Visual Studio.
 #          * A function that generates the custom entry property file `Directory.Build.props` which
 #            will be loaded by default when building with MSBuild / Visual Studio.
 #          * A function that generates the custom property file `General.Cpp.props` which contains
@@ -11,6 +13,20 @@
 
 
 include( ex_configure_file )
+
+
+##
+# @name generate_global_project_property_file()
+# @brief Generates the common, global property file that will be loaded by each target of a project.
+# @note This only has any effect and will only automatically be loaded when building with MSBuild.
+#
+function( generate_global_project_property_file )
+    if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
+        ex_configure_file( "${LUCHS_TEMPLATES_DIR}/MSBuildGlobalLuchsSettings.props.in"
+                           "${CMAKE_BINARY_DIR}/luchs.MSBuild.Props/GlobalLuchsSettings.props"
+                           NEWLINE_STYLE LF )
+    endif()
+endfunction()
 
 
 ##
