@@ -119,6 +119,8 @@ endif()
 # Generate property files for MSBuild / Visual Studio?
 if (CMAKE_GENERATOR MATCHES "Visual Studio.*")
     # Generate global property files.
+    # - the project-specific common, global property file
+    generate_global_project_property_file()
     # - the entry property file (`DirectoryBuild.props`)
     generate_entry_property_file()
     # - for specific programming languages.
