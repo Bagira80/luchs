@@ -68,3 +68,27 @@ function( generate_extra_project_sources )
         )
     endforeach()
 endfunction()
+
+
+##
+# @name generate_extra_project_msbuild_property_file()
+# @brief Generates a common MSBuild property file for targets of the current project.
+# @details This function generates a common MSBuild property file for the current project that
+#          should be loaded (automatically) by every target of this project, if MSBuild is used as
+#          build tool. Besides other things that property file does the following:
+#          * It loads a possibly existing global property file that contains several settings that
+#            were enabled by `luchs` and that might not have a better way of being set.
+#          * For the CMake target for which it was loaded it will also load a specific MSBuild
+#            property file `${CMAKE_PROJECT_SOURCE_DIR}/luchs/<target-name>.targets` if such a file
+#            exists.
+# @note The path to the generated property file shall be set as value of the CMake target property
+#       `VS_USER_PROPS` on every CMake target of the current project. (The `luchs` framework will
+#       automatically take care of this.)
+# @note The generated property file will also make sure to restore the original "user properties"
+#       loading mechanism that was used by `VS_USER_PROPS`.
+#
+function( generate_extra_project_msbuild_property_file )
+    configure_file( "${LUCHS_TEMPLATES_DIR}/MSBuildProjectName.props.in"
+                    "luchs/${PROJECT_NAME}.msbuild.props"
+                    @ONLY )
+endfunction()
